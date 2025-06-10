@@ -1,13 +1,7 @@
-To install dependencies:
+# Master Link API
 
-```sh
-bun install
-```
+A unified proxy API for delivery companies, providing a standardized interface to interact with multiple shipping providers through a single endpoint.
 
-To run:
+## 🗺️ Roadmap
 
-```sh
-bun run dev
-```
-
-open <http://localhost:3000>
+- [ ] Add more delivery companies
