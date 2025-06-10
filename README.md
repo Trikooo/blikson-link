@@ -17,9 +17,13 @@ Built with [Bun](https://bun.sh/) and [Hono](https://hono.dev/).
 
 ## Usage
 
+Install dependencies:
+
 ``` bash
 bun add
 ```
 
+Start the server:
+
 ```bash
-bun run src/index.ts
+bun run dev
