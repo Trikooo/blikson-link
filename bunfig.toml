@@ -1,0 +1,3 @@
+name = "blikson-link"
+main = "src/main.ts"
+compat = true

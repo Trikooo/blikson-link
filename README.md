@@ -1,4 +1,4 @@
-# master-link-api
+# blikson-link
 
 A lightweight forwarding API for delivery companies.  
 Built with [Bun](https://bun.sh/) and [Hono](https://hono.dev/).  

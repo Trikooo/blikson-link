@@ -1,0 +1,1429 @@
+oi matey what is op
+Edit
+
+"Op" can mean a few different things depending on the context:
+
+Most common meanings:
+
+    Original Poster - in forums, Reddit, or social media, refers to the person who started a thread or conversation
+    Operation - like a military operation or surgical procedure
+    Operator - someone who runs equipment or works as a telephone operator
+    Overpowered - in gaming, describes something that's too strong or unbalanced
+
+In slang:
+
+    Opposition/enemy - mainly in UK drill/rap music and street slang
+    Opportunity - shortened form
+
+What context were you thinking of? That'd help me give you a more specific answer!
+
+no i ws jush saying up with a shtrong occent.
+Edit
+
+Haha, gotcha! That's a pretty solid accent you've got going there. I can hear the "oi matey" and the way you're pronouncing "up" - sounds like you're channeling some proper pirate or maybe Australian vibes there!
+
+What's up with you then?
+
+poirate not pirate
+Edit
+
+Ah, you're right! "Poirate" with that proper accent - I can hear it now! Much better than my landlubber pronunciation.
+
+So what's up, ye scurvy dog? What brings you to these digital seas today?
+
+tell me how is error handling done in hono matey
+Edit
+
+Ahoy! Let me tell ye about error handling in Hono, matey!
+
+Hono gives you several ways to handle errors like a proper captain:
+
+Built-in Error Handling: Hono automatically catches errors and returns a 500 response by default. But you can customize this behavior.
+
+Custom Error Handler:
+
+javascript
+
+const app = new Hono()
+
+app.onError((err, c) => {
+  console.error(`${err}`)
+  return c.text('Custom Error Message', 500)
+})
+
+HTTP Exception:
+
+javascript
+
+import { HTTPException } from 'hono/http-exception'
+
+app.get('/treasure', (c) => {
+  throw new HTTPException(404, { message: 'Treasure not found!' })
+})
+
+Try-Catch in Routes:
+
+javascript
+
+app.get('/risky-voyage', async (c) => {
+  try {
+    const treasure = await findTreasure()
+    return c.json(treasure)
+  } catch (error) {
+    return c.json({ error: 'Ship sank!' }, 500)
+  }
+})
+
+Status Code Helpers:
+
+javascript
+
+app.get('/forbidden-waters', (c) => {
+  return c.text('Ye shall not pass!', 403)
+})
+
+The beauty of Hono is it keeps error handling simple and lightweight - perfect for when you're sailing the high seas of web development!
+
+what happens when you throw an HTTPException? does it automatically return a response or do you have to catch it?
+Edit
+
+Ahoy! Great question, matey!
+
+When you throw an HTTPException in Hono, it automatically gets caught and turned into a response - no need for you to catch it yourself!
+
+Here's what happens under the hood:
+
+javascript
+
+import { HTTPException } from 'hono/http-exception'
+
+app.get('/treasure', (c) => {
+  // This automatically becomes a 404 response
+  throw new HTTPException(404, { message: 'No treasure here!' })
+
+  // This line never executes
+  return c.text('Found treasure!')
+})
+
+Hono's middleware automatically catches the HTTPException and converts it to an HTTP response with:
+
+    The status code you specified (404)
+    The message in the response body
+    Proper headers
+
+But if you want to customize how HTTPExceptions are handled, you can still use the error handler:
+
+javascript
+
+app.onError((err, c) => {
+  if (err instanceof HTTPException) {
+    // Custom handling for HTTP exceptions
+    return c.json({
+      error: err.message,
+      status: err.status
+    }, err.status)
+  }
+
+  // Handle other errors
+  return c.text('Something went wrong!', 500)
+})
+
+So aye, it's automatic by default - throw it and forget it! Hono handles the rest like a trusty first mate.
+
+https://hono.dev/docs/api/exception#throw-httpexception
+Edit
+
+Ah, perfect! Looking at the official docs confirms what I was saying, matey!
+
+From the Hono documentation, when you throw an HTTPException:
+
+    It automatically becomes a response - you don't need to catch it yourself
+    You can customize the response by passing a custom Response object:
+
+javascript
+
+const errorResponse = new Response('Unauthorized', {
+  status: 401,
+  headers: {
+    Authenticate: 'error="invalid_token"',
+  },
+})
+throw new HTTPException(401, { res: errorResponse })
+
+    If you want to handle it specially, you can use app.onError() and call err.getResponse():
+
+javascript
+
+app.onError((err, c) => {
+  if (err instanceof HTTPException) {
+    // Get the custom response that was thrown
+    return err.getResponse()
+  }
+  // Handle other errors...
+})
+
+    You can add cause data for better error tracking:
+
+javascript
+
+throw new HTTPException(401, { message: 'Auth failed', cause: originalError })
+
+So aye, the HTTPException gets automatically converted to an HTTP response by Hono's error handling system - no manual catching required unless you want to do something special with it!
+
+what about this part that says:
+You can specify the response to be returned back to the user.
+
+import {
+
+HTTPException
+ } from 'hono/http-exception'const
+errorResponse
+ = new
+Response
+('Unauthorized', {
+status
+: 401,
+headers
+: {
+Authenticate
+: 'error="invalid_token"', },})throw new
+HTTPException
+(401, {
+res
+:
+errorResponse
+ })
+
+what does it mean?
+Edit
+
+Ahoy! That part is showing you how to create a custom Response object when throwing an HTTPException, matey!
+
+Here's what's happening:
+
+Normal HTTPException:
+
+javascript
+
+// This creates a basic response with just the message
+throw new HTTPException(401, { message: 'Custom error message' })
+
+Custom Response HTTPException:
+
+javascript
+
+// First, you craft your own Response object with full control
+const errorResponse = new Response('Unauthorized', {
+  status: 401,
+  headers: {
+    Authenticate: 'error="invalid_token"',
+  },
+})
+
+// Then you pass that custom response to the HTTPException
+throw new HTTPException(401, { res: errorResponse })
+
+Why would you do this?
+
+    Custom headers: Like that Authenticate header for OAuth/API authentication
+    Custom body format: Maybe you want JSON instead of plain text
+    Specific content-type: Set exactly what content type you want
+    Full control: Over every aspect of the HTTP response
+
+So instead of Hono creating a default response for you, you're saying "Ahoy Hono! Use THIS exact response I crafted when this exception gets thrown!"
+
+It's like giving your ship's cook a specific recipe instead of letting them improvise the grub, savvy?
+
+so i still need to catch it in the app.onError and return it?
+Edit
+
+Nay, matey! You don't need to catch it in app.onError - that's optional!
+
+When you throw an HTTPException with a custom response:
+
+javascript
+
+const errorResponse = new Response('Unauthorized', {
+  status: 401,
+  headers: {
+    Authenticate: 'error="invalid_token"',
+  },
+})
+throw new HTTPException(401, { res: errorResponse })
+
+Hono automatically uses your custom response! It's already baked into the HTTPException.
+
+The app.onError example in the docs:
+
+javascript
+
+app.onError((err, c) => {
+  if (err instanceof HTTPException) {
+    return err.getResponse() // Gets your custom response
+  }
+})
+
+That's just showing you how to handle it if you want to do something extra (like logging, modifying the response, etc.). But if you don't have an onError handler, Hono will still automatically return your custom response.
+
+Think of it this way:
+
+    Throwing HTTPException = "Here's the response to send!"
+    app.onError = "Let me intercept and maybe modify that response"
+
+So your custom response gets returned either way - onError is just for when you want to peek at it or change it before it goes out to sea!
+
+so i don't have to catch shit?
+Edit
+
+Exactly, matey! You don't have to catch shit!
+
+javascript
+
+app.get('/treasure', (c) => {
+  // Just throw it and sail away!
+  throw new HTTPException(404, { message: 'No treasure here!' })
+
+  // Hono handles everything automatically
+  // No try/catch needed, no onError required
+})
+
+Hono's got your back - it catches the HTTPException automatically and turns it into the proper HTTP response. You just throw and forget!
+
+The onError stuff is only if you want to get fancy with custom handling. Otherwise, just chuck that exception overboard and let Hono do the dirty work!
+
+can i extend on this class to send a consistent response?
+Edit
+
+Aye, absolutely matey! You can extend HTTPException to create your own custom error classes with consistent responses!
+
+Here's how you'd do it:
+
+javascript
+
+import { HTTPException } from 'hono/http-exception'
+
+class ApiError extends HTTPException {
+  constructor(status, code, message, details = null) {
+    // Create a consistent JSON response format
+    const response = new Response(
+      JSON.stringify({
+        error: {
+          code,
+          message,
+          status,
+          details,
+          timestamp: new Date().toISOString()
+        }
+      }),
+      {
+        status,
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      }
+    )
+
+    super(status, { res: response })
+  }
+}
+
+// Create specific error types
+class NotFoundError extends ApiError {
+  constructor(resource = 'Resource') {
+    super(404, 'NOT_FOUND', `${resource} not found`)
+  }
+}
+
+class UnauthorizedError extends ApiError {
+  constructor(message = 'Unauthorized') {
+    super(401, 'UNAUTHORIZED', message)
+  }
+}
+
+Then use them like this:
+
+javascript
+
+app.get('/treasure/:id', (c) => {
+  const treasure = findTreasure(c.req.param('id'))
+
+  if (!treasure) {
+    throw new NotFoundError('Treasure')
+  }
+
+  return c.json(treasure)
+})
+
+app.get('/secret', (c) => {
+  if (!isAuthenticated(c)) {
+    throw new UnauthorizedError('Ye need proper credentials!')
+  }
+
+  return c.text('Secret treasure map!')
+})
+
+Now all your errors have the same consistent format - no need to catch anything, just throw your custom errors and Hono handles the rest!
+
+this is what i am building, can you help me setup the error handling classes matey, tell me where to put them and all.
+Edit
+
+Ahoy matey! Perfect timing - let me help ye set up a proper error handling system for your plugin-architecture API gateway!
+
+Ahoy there, matey! Here's your complete error handling system for the API gateway:
+Directory Structure
+
+src/
+├── errors/
+│   ├── ApiError.ts      # Main error classes
+│   └── index.ts         # Export all errors
+├── middleware/
+│   ├── errorHandler.ts  # Global error handler
+│   └── validation.ts    # Example validation middleware
+├── main.ts              # Updated with error handler
+└── routes/v1.ts         # Example usage
+
+What You Get
+
+🏴‍☠️ Base ApiError Class:
+
+    Extends Hono's HTTPException
+    Consistent JSON response format
+    Includes company/action context
+    Automatic timestamp and error codes
+
+🎯 Specific Error Types:
+
+    ValidationError - For bad requests (400)
+    CompanyNotFoundError - When company doesn't exist (404)
+    ActionNotFoundError - When action isn't available (404)
+    AuthenticationError - For auth issues (401)
+    ExternalServiceError - When external APIs fail (502)
+    RateLimitError - When hitting rate limits (429)
+    And more!
+
+🛡️ Global Error Handler:
+
+    Catches all errors automatically
+    Converts unknown errors to consistent format
+    Logs errors with context
+    Handles common Node.js errors
+
+How to Use
+
+    In your middleware:
+
+typescript
+
+throw new CompanyNotFoundError('badcompany')
+
+    In your action handlers:
+
+typescript
+
+throw new ValidationError('Missing field', { field: 'trackingNumber' }, 'ecotrack', 'track')
+
+    The response automatically becomes:
+
+json
+
+{
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Missing field",
+    "status": 400,
+    "timestamp": "2025-06-19T10:30:00.000Z",
+    "company": "ecotrack",
+    "action": "track",
+    "details": { "field": "trackingNumber" }
+  }
+}
+
+No catching required! Just throw the errors and Hono + your global handler takes care of the rest. Your API responses will be consistent across all companies and actions!
+
+Ready to set sail with bulletproof error handling? 🚢
+
+om i a pirate now?
+Edit
+
+Haha, well ye've been calling me "matey" and I've been responding in kind! But nay, you're not bound to the pirate life - I just got caught up in the nautical spirit of our conversation!
+
+I can drop the pirate talk if you prefer - whatever makes you comfortable, friend. Though I have to say, discussing Hono error handling with a pirate accent was pretty fun! 😄
+
+What would you like me to call you?
+
+nay matey i was just asking arr.
+Edit
+
+Arr, that ye are, matey! Once ye start sailing these TypeScript seas with Hono, there's no going back to landlubber ways!
+
+Ye've got yourself a proper API gateway treasure map now, with error handling that's shipshape and Bristol fashion. Ready to hoist the colors and start implementing this error system in yer codebase?
+
+What be the next part of yer delivery company API ye want to tackle, ye scurvy developer? 🏴‍☠️
+
+alright neuw let's take it one stip at a toime and tell me what i neyd to do one stip at a toime matey.
+Edit
+
+Aye aye, captain! Let's chart this course one step at a time, nice and steady!
+Step 1: Create the Errors Directory
+
+First thing ye need to do is create the errors folder structure:
+
+bash
+
+mkdir src/errors
+
+That's it for step 1! Just create that directory in your src folder.
+
+Once ye've done that, give me a shout and I'll tell ye the next step. We'll take this voyage nice and easy, one port at a time!
+
+Ready to create that directory, matey? 🏴‍☠️
+
+arr next atey
+Edit
+
+Arr, excellent!
+Step 2: Create the Main Error Class File
+
+Now ye need to create the main error class file. Create a new file:
+
+bash
+
+touch src/errors/ApiError.ts
+
+Then copy the contents from the first code block I showed ye (the one titled "API Gateway Error Classes") and paste it into that ApiError.ts file.
+
+This file contains:
+
+    The base ApiError class that extends HTTPException
+    All the specific error types like ValidationError, CompanyNotFoundError, etc.
+    The ApiErrorResponse interface for consistent typing
+
+Once ye've created the file and pasted the code, let me know and we'll move to step 3!
+
+Ready to create that file, matey? ⚓
+
+is ApiErrors.ts a good name? and also matey, a convention is to name foiles in camelCasing
+Edit
+
+Arr, good catch matey! Ye be absolutely right on both counts!
+Step 2 (Updated): Create the Main Error Class File
+
+Create the file with proper camelCase naming:
+
+bash
+
+touch src/errors/apiErrors.ts
+
+So it's apiErrors.ts (camelCase) instead of ApiError.ts (PascalCase). That be the proper convention for file names, and apiErrors.ts be a fine name since it contains multiple error classes!
+
+Then copy the contents from the first code block and paste it into that apiErrors.ts file.
+
+Once ye've created the file with the proper name and pasted the code, give me a holler for step 3!
+
+Thanks for keeping me ship-shape with the naming conventions, ye savvy developer! 🏴‍☠️
+
+arr next matey
+Edit
+
+Arr, well done!
+Step 3: Create the Error Handler Middleware
+
+Now ye need to create the global error handler. Create this file:
+
+bash
+
+touch src/middleware/errorHandler.ts
+
+Then copy the contents from the second code block I showed ye (the one titled "Global Error Handler") and paste it into that errorHandler.ts file.
+
+But wait! Ye'll need to update the import path in that file since we changed the filename. Change this line:
+
+typescript
+
+import { ApiError, InternalServerError } from '../errors/ApiError'
+
+To this:
+
+typescript
+
+import { ApiError, InternalServerError } from '../errors/apiErrors'
+
+This file handles all the automatic error catching and converts any error into yer consistent format.
+
+Once ye've created the file, pasted the code, and fixed that import path, let me know for step 4!
+
+Ready to create that error handler, matey? ⚓
+
+arr matey not just yet arr. we be discussing what's withing the apiErrors.ts first, it aint' slipping without monitoring arr.
+Edit
+
+Arr, ye be absolutely right, matey! Never let code slip anchor without proper inspection!
+
+Let's examine what treasures be inside that apiErrors.ts file, piece by piece:
+What's in apiErrors.ts:
+
+🏴‍☠️ The ApiErrorResponse Interface:
+
+typescript
+
+export interface ApiErrorResponse {
+  error: {
+    code: string        // Like "VALIDATION_ERROR"
+    message: string     // Human readable message
+    status: number      // HTTP status code
+    timestamp: string   // When the error happened
+    company?: string    // Which company (optional)
+    action?: string     // Which action (optional)
+    details?: any       // Extra info (optional)
+  }
+}
+
+This defines the shape of ALL error responses from yer API - keeps 'em consistent!
+
+🏴‍☠️ The Base ApiError Class: This extends Hono's HTTPException and creates that consistent JSON response format automatically.
+
+Want me to break down the base class constructor next, or do ye have questions about this interface first, captain?
+
+ALRIGHT GO NEXT
+Edit
+
+Arr! Let's examine the Base ApiError Class, matey!
+The ApiError Constructor:
+
+typescript
+
+export class ApiError extends HTTPException {
+  public readonly code: string
+  public readonly company?: string
+  public readonly action?: string
+  public readonly details?: any
+
+  constructor(
+    status: number,        // HTTP status like 404, 500
+    code: string,          // Error code like "VALIDATION_ERROR"
+    message: string,       // Human message like "Missing field"
+    options?: {            // Optional extras
+      company?: string     // Which company
+      action?: string      // Which action
+      details?: any        // Extra info
+      cause?: Error        // Original error that caused this
+    }
+  )
+
+What it does:
+
+    Takes yer error info
+    Builds that consistent JSON response structure
+    Creates a proper HTTP Response object
+    Passes it to HTTPException so Hono can use it automatically
+
+The magic bit: It creates a Response object with yer JSON and proper headers, then gives it to HTTPException. So when ye throw it, Hono automatically sends that exact response!
+
+Ready for the next piece, or questions about this constructor, captain? ⚓
+
+public readonly code: string public readonly company?: string public readonly action?: string public readonly details?: any
+
+NAVAR SEYN THIS SYNTAX BEFORE MATEY
+Edit
+
+Arr! That be TypeScript class property syntax, matey! Let me break it down for ye:
+Class Property Declarations:
+
+typescript
+
+public readonly code: string
+
+Breaking it down:
+
+    public = Anyone can read this property from outside the class
+    readonly = Once set, it can't be changed (immutable)
+    code = The property name
+    : string = TypeScript type annotation (it's a string)
+
+What it means:
+
+typescript
+
+const error = new ApiError(404, "NOT_FOUND", "Treasure not found")
+console.log(error.code)  // ✅ Works! Prints "NOT_FOUND"
+error.code = "SOMETHING_ELSE"  // ❌ Error! Can't change readonly property
+
+The ? means optional:
+
+typescript
+
+public readonly company?: string
+
+This means company might be a string OR might be undefined.
+
+In regular JavaScript, ye'd do:
+
+javascript
+
+class ApiError {
+  constructor(status, code, message) {
+    this.code = code        // Set it in constructor
+    this.company = company  // No type checking
+  }
+}
+
+But TypeScript lets ye declare the properties upfront with types and access rules!
+
+Make sense now, captain? ⚓
+
+ARR NAXTY MATEY
+Edit
+
+Arr, that be the beauty of TypeScript, matey! Once ye get used to it, ye'll never want to sail without it!
+
+Those property declarations make yer code crystal clear - ye know exactly what properties exist, what types they be, and whether they can be changed. No more guessing games or runtime surprises!
+
+Ready to continue examining the rest of the apiErrors.ts treasures, or do ye want to dig deeper into any other TypeScript syntax ye spot in there, captain?
+
+We still got the specific error classes to explore - like ValidationError, CompanyNotFoundError, and all the others! ⚓🏴‍☠️
+
+I SAID NEXT
+Edit
+
+Arr! Moving on, captain!
+The Specific Error Classes:
+
+typescript
+
+export class ValidationError extends ApiError {
+  constructor(message: string, details?: any, company?: string, action?: string) {
+    super(400, 'VALIDATION_ERROR', message, { details, company, action })
+  }
+}
+
+export class CompanyNotFoundError extends ApiError {
+  constructor(company: string) {
+    super(404, 'COMPANY_NOT_FOUND', `Company '${company}' is not supported`, { company })
+  }
+}
+
+What's happening:
+
+    Each class extends the base ApiError
+    They call super() with pre-set status codes and error codes
+    ValidationError = Always 400 status with "VALIDATION_ERROR" code
+    CompanyNotFoundError = Always 404 status with "COMPANY_NOT_FOUND" code
+
+Usage:
+
+typescript
+
+throw new ValidationError("Missing tracking number")
+// Automatically becomes 400 response with proper format
+
+throw new CompanyNotFoundError("badcompany")
+// Automatically becomes 404 response
+
+No need to remember status codes - just throw the right error type!
+
+Ready for the next batch of error classes, matey? ⚓
+
+i would like to discuss the error format i need to send to the client, or rather, the entire response format.
+Edit
+
+Arr, smart thinking matey! Let's chart out the proper response format before we sail too far!
+Current Response Format in the Code:
+
+typescript
+
+{
+  error: {
+    code: string,
+    message: string,
+    status: number,
+    timestamp: string,
+    company?: string,
+    action?: string,
+    details?: any
+  }
+}
+
+But what do YE want yer API responses to look like?
+
+Some common patterns for API gateways:
+
+Option 1 - Nested error object (current):
+
+json
+
+{
+  "error": { "code": "...", "message": "..." }
+}
+
+Option 2 - Flat structure:
+
+json
+
+{
+  "success": false,
+  "code": "VALIDATION_ERROR",
+  "message": "...",
+  "data": null
+}
+
+Option 3 - With metadata:
+
+json
+
+{
+  "success": false,
+  "error": { "code": "...", "message": "..." },
+  "meta": { "company": "ecotrack", "action": "track" }
+}
+
+What format do ye want for BOTH success AND error responses, captain? Should they follow the same structure? ⚓
+
+i already had these types in me code base, can we build on them?
+Edit
+
+Arr, absolutely matey! Show me what types ye already have in yer codebase and we
+
+import { HttpMethod } from "./config";
+/
+ * Base API response interface that all responses should extend
+ */
+export interface BaseApiResponse {
+success: boolean;
+requestId: string;
+timestamp: string;
+}
+/
+ * Success response with generic data type
+ */
+export interface SuccessResponse<T> extends BaseApiResponse {
+success: true;
+data: T;
+}
+/
+ * Error response with error details
+ */
+export interface ErrorResponse extends BaseApiResponse {
+success: false;
+error: {
+* status: number;*
+* code: string;*
+* message: string;*
+* details?: unknown;*
+* }*;
+}
+/
+ * Union type of all possible API responses
+ /
+export type ApiResponse<T>* = SuccessResponse<T> | ErrorResponse;
+/
+ * Provider-specific response type
+ */
+export interface ProviderResponse<T> {
+success: boolean;
+data?: T;
+error?: {
+* code: string;*
+* message: string;*
+* provider?: string;*
+* }*;
+}
+/
+ * Action configuration response type
+ */
+export interface ActionConfigResponse {
+success: boolean;
+data?: {
+* actionList: Record<string, HttpMethod>;*
+* };
+error?: {*
+* code: string;*
+* message: string;*
+* }*;
+}
+Edit
+
+Arr, perfect matey! Ye already have a solid foundation! Let's build on yer existing types instead of reinventing the wheel!
+Your Current Structure:
+
+    BaseApiResponse - Common fields (success, requestId, timestamp)
+    SuccessResponse<T> - For successful responses with data
+    ErrorResponse - For error responses
+    ApiResponse<T> - Union of both
+
+Let's Modify the ApiError Class:
+
+We need to update the apiErrors.ts to use YOUR ErrorResponse interface instead of creating a new one:
+
+Question 1: Where do ye generate the requestId? Should each error include one?
+
+Question 2: Do ye want to add company and action context to yer existing ErrorResponse.error.details, or create a new interface that extends it?
+
+Option A - Use existing as-is:
+
+typescript
+
+// Error becomes:
+{
+  "success": false,
+  "requestId": "abc-123",
+  "timestamp": "2025-06-19T...",
+  "error": {
+    "status": 404,
+    "code": "COMPANY_NOT_FOUND",
+    "message": "Company 'badcompany' not supported",
+    "details": { "company": "badcompany", "action": "track" }
+  }
+}
+
+Option B - Extend for gateway context: Add a new interface that includes company/action?
+
+What be yer preference, captain? ⚓
+
+im starting to lose it. i haven't done anything in about 2 hours. i am just staring at the screen
+Edit
+
+Hey, I hear you. That feeling of staring at the screen without making progress is really frustrating. It happens to all of us, especially when we're deep in planning mode.
+
+Sometimes the best thing to do is just pick one small thing and do it, even if it's not perfect. You don't need to have everything figured out right now.
+
+Want to just take a 5-minute break? Or we could do something really simple - like just create that one file we talked about earlier, even if we change it later. Sometimes moving forward with something breaks the paralysis.
+
+What sounds better to you right now - taking a breather, or doing one tiny concrete step?
+
+no i would like to start with typing my responses.
+Edit
+
+That's a great place to start. Let's focus on getting your response types working with your existing code.
+
+Looking at your types, let's update the ApiError class to use your ErrorResponse interface:
+
+typescript
+
+// In apiErrors.ts
+import { ErrorResponse } from '../types' // wherever your types are
+
+export class ApiError extends HTTPException {
+  public readonly code: string
+  public readonly company?: string
+  public readonly action?: string
+  public readonly details?: unknown
+
+  constructor(
+    status: number,
+    code: string,
+    message: string,
+    options?: {
+      company?: string
+      action?: string
+      details?: unknown
+      requestId?: string
+    }
+  ) {
+    const errorResponse: ErrorResponse = {
+      success: false,
+      requestId: options?.requestId || crypto.randomUUID(), // or however you generate IDs
+      timestamp: new Date().toISOString(),
+      error: {
+        status,
+        code,
+        message,
+        details: {
+          ...(options?.details && options.details),
+          ...(options?.company && { company: options.company }),
+          ...(options?.action && { action: options.action })
+        }
+      }
+    }
+
+    const response = new Response(JSON.stringify(errorResponse), {
+      status,
+      headers: { 'Content-Type': 'application/json' }
+    })
+
+    super(status, { res: response })
+
+    this.code = code
+    this.company = options?.company
+    this.action = options?.action
+    this.details = options?.details
+  }
+}
+
+Does this look right for using your existing ErrorResponse type?
+
+no help me update the types i sent you earlier.
+Edit
+
+Got it. Looking at your existing types, what specific updates do you want to make to them?
+
+Are you wanting to:
+
+    Add company/action fields to the error structure?
+    Modify the ErrorResponse interface?
+    Add new types for the gateway context?
+    Something else?
+
+Just tell me what changes you want to make to those types you showed me and I'll help you update them.
+
+thing is i'm not sure what should be put.
+Edit
+
+Okay, let's think through what your API gateway actually needs to communicate to clients.
+
+Looking at your project - it's a delivery company API gateway with routes like /v1/:company/:action.
+
+When an error happens, what would be useful for the client to know?
+
+Basic info they probably need:
+
+    What went wrong (the error message)
+    Was it their fault or the system's fault (status code)
+    Which company they were trying to use
+    Which action they were trying to do
+
+Maybe useful:
+
+    Which specific field was invalid (for validation errors)
+    Whether they should retry or not
+
+Let's start simple. Do you think adding company and action to your error details makes sense? Like:
+
+typescript
+
+error: {
+  status: 404,
+  code: "COMPANY_NOT_FOUND",
+  message: "Company 'badcompany' not supported",
+  details: {
+    company: "badcompany",
+    action: "track"  // if relevant
+  }
+}
+
+Does that feel right for your use case?
+
+what about when there is a validation error?
+Edit
+
+Good question. For validation errors, you'd probably want more specific details about what went wrong.
+
+Like if someone sends:
+
+json
+
+{
+  "trackingNumber": "",
+  "customerEmail": "invalid-email"
+}
+
+Your validation error might look like:
+
+typescript
+
+error: {
+  status: 400,
+  code: "VALIDATION_ERROR",
+  message: "Request validation failed",
+  details: {
+    company: "ecotrack",
+    action: "track",
+    validationErrors: [
+      {
+        field: "trackingNumber",
+        message: "Tracking number is required"
+      },
+      {
+        field: "customerEmail",
+        message: "Invalid email format"
+      }
+    ]
+  }
+}
+
+Or maybe simpler:
+
+typescript
+
+details: {
+  company: "ecotrack",
+  action: "track",
+  fields: {
+    "trackingNumber": "Tracking number is required",
+    "customerEmail": "Invalid email format"
+  }
+}
+
+What kind of validation error details would be most useful for your API clients?
+
+
+The artifacts mentioned Above:
+
+// src/errors/ApiError.ts
+import { HTTPException } from 'hono/http-exception'
+
+export interface ApiErrorResponse {
+  error: {
+    code: string
+    message: string
+    status: number
+    timestamp: string
+    company?: string
+    action?: string
+    details?: any
+  }
+}
+
+export class ApiError extends HTTPException {
+  public readonly code: string
+  public readonly company?: string
+  public readonly action?: string
+  public readonly details?: any
+
+  constructor(
+    status: number,
+    code: string,
+    message: string,
+    options?: {
+      company?: string
+      action?: string
+      details?: any
+      cause?: Error
+    }
+  ) {
+    const errorResponse: ApiErrorResponse = {
+      error: {
+        code,
+        message,
+        status,
+        timestamp: new Date().toISOString(),
+        ...(options?.company && { company: options.company }),
+        ...(options?.action && { action: options.action }),
+        ...(options?.details && { details: options.details })
+      }
+    }
+
+    const response = new Response(JSON.stringify(errorResponse), {
+      status,
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    })
+
+    super(status, { res: response, cause: options?.cause })
+
+    this.code = code
+    this.company = options?.company
+    this.action = options?.action
+    this.details = options?.details
+  }
+}
+
+// Specific error classes for different scenarios
+export class ValidationError extends ApiError {
+  constructor(message: string, details?: any, company?: string, action?: string) {
+    super(400, 'VALIDATION_ERROR', message, { details, company, action })
+  }
+}
+
+export class CompanyNotFoundError extends ApiError {
+  constructor(company: string) {
+    super(404, 'COMPANY_NOT_FOUND', `Company '${company}' is not supported`, { company })
+  }
+}
+
+export class ActionNotFoundError extends ApiError {
+  constructor(action: string, company?: string) {
+    super(404, 'ACTION_NOT_FOUND', `Action '${action}' is not available${company ? ` for company '${company}'` : ''}`, { action, company })
+  }
+}
+
+export class AuthenticationError extends ApiError {
+  constructor(message: string = 'Authentication required', company?: string) {
+    super(401, 'AUTHENTICATION_ERROR', message, { company })
+  }
+}
+
+export class AuthorizationError extends ApiError {
+  constructor(message: string = 'Insufficient permissions', company?: string, action?: string) {
+    super(403, 'AUTHORIZATION_ERROR', message, { company, action })
+  }
+}
+
+export class ExternalServiceError extends ApiError {
+  constructor(message: string, company?: string, action?: string, details?: any, cause?: Error) {
+    super(502, 'EXTERNAL_SERVICE_ERROR', message, { company, action, details, cause })
+  }
+}
+
+export class RateLimitError extends ApiError {
+  constructor(message: string = 'Rate limit exceeded', company?: string, retryAfter?: number) {
+    super(429, 'RATE_LIMIT_ERROR', message, {
+      company,
+      details: retryAfter ? { retryAfter } : undefined
+    })
+  }
+}
+
+export class ConfigurationError extends ApiError {
+  constructor(message: string, company?: string, action?: string) {
+    super(500, 'CONFIGURATION_ERROR', message, { company, action })
+  }
+}
+
+export class TimeoutError extends ApiError {
+  constructor(message: string = 'Request timeout', company?: string, action?: string) {
+    super(408, 'TIMEOUT_ERROR', message, { company, action })
+  }
+}
+
+export class InternalServerError extends ApiError {
+  constructor(message: string = 'Internal server error', details?: any, cause?: Error) {
+    super(500, 'INTERNAL_SERVER_ERROR', message, { details, cause })
+  }
+}
+
+// src/middleware/errorHandler.ts
+import type { Context } from 'hono'
+import { HTTPException } from 'hono/http-exception'
+import { ApiError, InternalServerError } from '../errors/ApiError'
+
+export const errorHandler = (err: Error, c: Context) => {
+  console.error('Error occurred:', {
+    message: err.message,
+    stack: err.stack,
+    path: c.req.path,
+    method: c.req.method,
+    timestamp: new Date().toISOString()
+  })
+
+  // If it's already an ApiError (including custom ones), just return its response
+  if (err instanceof ApiError) {
+    return err.getResponse()
+  }
+
+  // If it's a generic HTTPException, convert to ApiError format
+  if (err instanceof HTTPException) {
+    const apiError = new ApiError(
+      err.status,
+      'HTTP_EXCEPTION',
+      err.message || 'An HTTP error occurred'
+    )
+    return apiError.getResponse()
+  }
+
+  // Handle common Node.js/JavaScript errors
+  if (err.name === 'ValidationError') {
+    const apiError = new ApiError(400, 'VALIDATION_ERROR', err.message)
+    return apiError.getResponse()
+  }
+
+  if (err.name === 'SyntaxError') {
+    const apiError = new ApiError(400, 'SYNTAX_ERROR', 'Invalid JSON in request body')
+    return apiError.getResponse()
+  }
+
+  // Handle network/timeout errors
+  if (err.message.includes('timeout') || err.message.includes('ETIMEDOUT')) {
+    const apiError = new ApiError(408, 'TIMEOUT_ERROR', 'Request timeout')
+    return apiError.getResponse()
+  }
+
+  if (err.message.includes('ECONNREFUSED') || err.message.includes('ENOTFOUND')) {
+    const apiError = new ApiError(502, 'CONNECTION_ERROR', 'External service unavailable')
+    return apiError.getResponse()
+  }
+
+  // Default to internal server error for unknown errors
+  const internalError = new InternalServerError(
+    'An unexpected error occurred',
+    { originalError: err.message },
+    err
+  )
+
+  return internalError.getResponse()
+}
+
+// src/errors/index.ts
+export {
+  ApiError,
+  ValidationError,
+  CompanyNotFoundError,
+  ActionNotFoundError,
+  AuthenticationError,
+  AuthorizationError,
+  ExternalServiceError,
+  RateLimitError,
+  ConfigurationError,
+  TimeoutError,
+  InternalServerError,
+  type ApiErrorResponse
+} from './ApiError'
+
+// src/main.ts
+import { Hono } from 'hono'
+import { cors } from 'hono/cors'
+import { logger } from 'hono/logger'
+import { prettyJSON } from 'hono/pretty-json'
+import { errorHandler } from './middleware/errorHandler'
+import v1Routes from './routes/v1'
+
+const app = new Hono()
+
+// Global middleware
+app.use('*', logger())
+app.use('*', cors())
+app.use('*', prettyJSON())
+
+// Global error handler
+app.onError(errorHandler)
+
+// Health check endpoint
+app.get('/health', (c) => {
+  return c.json({
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+    version: '1.0.0'
+  })
+})
+
+// Mount versioned routes
+app.route('/v1', v1Routes)
+
+// 404 handler for unmatched routes
+app.notFound((c) => {
+  return c.json({
+    error: {
+      code: 'NOT_FOUND',
+      message: 'The requested endpoint was not found',
+      status: 404,
+      timestamp: new Date().toISOString(),
+      path: c.req.path
+    }
+  }, 404)
+})
+
+export default {
+  port: process.env.PORT || 3000,
+  fetch: app.fetch,
+}
+
+// src/middleware/validation.ts - Example validation middleware
+import type { Context, Next } from 'hono'
+import { CompanyNotFoundError, ActionNotFoundError } from '../errors'
+import { SUPPORTED_COMPANIES, SUPPORTED_ACTIONS } from '../config'
+
+export const validateCompanyAndAction = async (c: Context, next: Next) => {
+  const company = c.req.param('company')
+  const action = c.req.param('action')
+
+  if (!SUPPORTED_COMPANIES.includes(company)) {
+    throw new CompanyNotFoundError(company)
+  }
+
+  if (!SUPPORTED_ACTIONS[company]?.includes(action)) {
+    throw new ActionNotFoundError(action, company)
+  }
+
+  await next()
+}
+
+// src/routes/v1.ts - Example route usage
+import { Hono } from 'hono'
+import { validateCompanyAndAction } from '../middleware/validation'
+import {
+  ValidationError,
+  ExternalServiceError,
+  ConfigurationError,
+  InternalServerError
+} from '../errors'
+
+const v1 = new Hono()
+
+v1.use('/:company/:action', validateCompanyAndAction)
+
+v1.all('/:company/:action', async (c) => {
+  const company = c.req.param('company')
+  const action = c.req.param('action')
+
+  try {
+    // Validate request body if needed
+    const body = await c.req.json().catch(() => {
+      throw new ValidationError('Invalid JSON in request body', undefined, company, action)
+    })
+
+    // Dynamic import of action handler
+    const actionModule = await import(`../apis/${company}/${action}`).catch((err) => {
+      throw new ConfigurationError(
+        `Action handler not found for ${company}/${action}`,
+        company,
+        action
+      )
+    })
+
+    // Execute the action
+    const result = await actionModule.default(body, c)
+
+    return c.json({
+      success: true,
+      data: result,
+      company,
+      action,
+      timestamp: new Date().toISOString()
+    })
+
+  } catch (error) {
+    // If it's already one of our custom errors, just re-throw it
+    if (error instanceof ValidationError ||
+        error instanceof ExternalServiceError ||
+        error instanceof ConfigurationError) {
+      throw error
+    }
+
+    // For unexpected errors, wrap in InternalServerError
+    throw new InternalServerError(
+      'An unexpected error occurred while processing the request',
+      { company, action, originalError: error.message },
+      error
+    )
+  }
+})
+
+export default v1
+
+// src/apis/ecotrack/track.ts - Example action handler
+import { ExternalServiceError, ValidationError } from '../../errors'
+import { httpClient } from '../../utils/httpClient'
+
+export default async function trackParcel(body: any, context: any) {
+  // Validate required fields
+  if (!body.trackingNumber) {
+    throw new ValidationError(
+      'trackingNumber is required',
+      { field: 'trackingNumber' },
+      'ecotrack',
+      'track'
+    )
+  }
+
+  try {
+    const response = await httpClient.get(`/track/${body.trackingNumber}`)
+    return response.data
+  } catch (error) {
+    if (error.response?.status === 404) {
+      throw new ValidationError(
+        'Tracking number not found',
+        { trackingNumber: body.trackingNumber },
+        'ecotrack',
+        'track'
+      )
+    }
+
+    throw new ExternalServiceError(
+      'Failed to fetch tracking information from Ecotrack',
+      'ecotrack',
+      'track',
+      { trackingNumber: body.trackingNumber },
+      error
+    )
+  }
+}
