@@ -1,5 +1,5 @@
 import { ecotrackActions } from "../apis/ecotrack/config";
-import { Actions } from "../types/config";
+import { Actions } from "../types/config.types";
 
 export const actions: Actions = {
   ecotrack: ecotrackActions,

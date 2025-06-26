@@ -1,4 +1,4 @@
-import { Company } from "../types/config";
+import { Company } from "../types/config.types";
 
 export const companies: Record<string, Company> = {
   yalidine: {

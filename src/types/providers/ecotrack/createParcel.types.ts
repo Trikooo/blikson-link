@@ -1,12 +1,3 @@
-import { HttpMethod } from "../config";
-
-export type EcotrackActionsType = {
-  [key: string]: {
-    endpoint: string;
-    method: HttpMethod;
-  };
-};
-
 export interface CreateParcelRequest {
   reference?: string;
   nom_client: string;
@@ -37,3 +28,6 @@ export interface CreateParcelResponseError {
   message: string;
   errors: Record<string, string[]>;
 }
+export type CreateParcelResponse =
+  | CreateParcelResponseSuccess
+  | CreateParcelResponseError;

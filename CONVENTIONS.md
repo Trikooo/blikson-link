@@ -46,49 +46,37 @@ blikson-link/
 ├── src/
 │   ├── apis/                    # API provider implementations
 │   │   ├── ecotrack/           # EcoTrack provider
-│   │   │   ├── actions/        # API action handlers
-│   │   │   ├── config.ts       # Provider configuration
-│   │   │   └── companies.ts    # Company-specific logic
-│   │   │
-│   │   ├── yalidine/          # Yalidine provider
-│   │   │   ├── actions/        # API action handlers
-│   │   │   └── config.ts       # Provider configuration
-│   │   │
-│   │   ├── noest/             # Noest provider
-│   │   │   ├── actions/        # API action handlers
-│   │   │   └── config.ts       # Provider configuration
+│   │   │   ├── actions/        # API action handlers (per action, e.g., createParcel.ts)
+│   │   │   ├── config.ts       # Provider configuration (endpoints, methods)
+│   │   │   └── utils.ts        # Provider-specific utilities (if any)
+│   │   ├── yalidine/           # Yalidine provider (structure to match ecotrack as implemented)
+│   │   └── noest/              # Noest provider (structure to match ecotrack as implemented)
 │   │
 │   ├── config/                 # Global configuration
-│   │   └── companies.ts        # Company mappings
+│   │   ├── actions.ts          # Maps provider actions to endpoints/methods
+│   │   └── companies.ts        # Company mappings and metadata
 │   │
 │   ├── routes/                 # API route definitions
-│   │   └── v1.ts              # Version 1 API routes
+│   │   └── v1.ts               # Version 1 API routes
 │   │
-│   ├── middleware/            # Request/response middleware
-│   │   └── errorHandler.ts    # Global error handling
+│   ├── middleware/             # Request/response middleware
+│   │   └── companyActionValidation.ts # Middleware for validating company/action
 │   │
-│   ├── types/                 # TypeScript type definitions
-│   │   ├── api.ts            # Common API types (requests, responses)
-│   │   ├── parcel.ts         # Common parcel types
-│   │   ├── provider.ts       # Provider interface types
-│   │   │
-│   │   ├── providers/        # Provider-specific types
-│   │   │   ├── ecotrack.ts   # EcoTrack types
-│   │   │   ├── yalidine.ts   # Yalidine types
-│   │   │   └── noest.ts      # Noest types
-│   │   │
-│   │   └── index.ts          # Type exports
+│   ├── types/                  # TypeScript type definitions
+│   │   ├── api.types.ts        # Common API types (requests, responses)
+│   │   ├── config.types.ts     # Config and provider types
+│   │   └── providers/          # Provider-specific types
+│   │       └── ecotrack/       # Ecotrack-specific types (one file per action, e.g., createParcel.types.ts)
 │   │
-│   ├── utils/                 # Utility functions
-│   │   ├── request.ts         # Request handling utilities
-│   │   └── respond.ts         # Response formatting utilities
+│   ├── utils/                  # Utility functions
+│   │   └── request.ts          # Request handling utilities
 │   │
-│   └── main.ts               # Application entry point
+│   └── main.ts                 # Application entry point
 │
-├── .env                      # Environment variables
-├── bunfig.toml              # Bun configuration
-├── README.md                # Project documentation
-└── .gitignore              # Git ignore rules
+├── .env                        # Environment variables
+├── bunfig.toml                 # Bun configuration
+├── README.md                   # Project documentation
+└── .gitignore                  # Git ignore rules
 ```
 
 ## Naming Conventions
@@ -96,9 +84,10 @@ blikson-link/
 ### Files and Directories
 
 - API provider directories: lowercase (e.g., `ecotrack/`, `yalidine/`)
-- Action files: camelCase (e.g., `createShipment.ts`, `trackPackage.ts`)
+- Action files: camelCase (e.g., `createParcel.ts`)
+- Type files: camelCase with `.types.ts` suffix (e.g., `api.types.ts`, `createParcel.types.ts`)
 - Configuration files: `config.ts`
-- Utility files: camelCase (e.g., `request.ts`, `respond.ts`)
+- Utility files: camelCase (e.g., `request.ts`)
 - Test files: `*.test.ts` or `*.spec.ts`
 
 ### Functions and Variables
@@ -107,36 +96,69 @@ blikson-link/
 - Use descriptive names that indicate purpose
 - Boolean variables should start with is/has/should (e.g., `isValid`, `hasError`)
 - API action handlers should be verbs (e.g., `createParcel`, `trackParcel`)
-- the noun chosen for the parcel is "Parcel", don't use other synonyms such as "Package" or anything else.
+- The noun chosen for the parcel is "Parcel"; do not use synonyms such as "Package"
 
 ## TypeScript Conventions
 
 - Always use TypeScript for new code
 - Define explicit types for function parameters and return values
 - Use interfaces for API request/response types
-- Use type aliases for complex types
+- Use type aliases for complex types and enums (e.g., union string types)
 - Avoid using `any` type
 - Use proper type imports/exports
 - Use type guards when necessary
+- Provider-specific types are grouped under `src/types/providers/{provider}/` and named according to the action (e.g., `createParcel.types.ts`)
+- All type files use the `.types.ts` suffix
+- API response types should be generic and composable, supporting both success and error cases
 
 Example:
 
 ```typescript
-interface ShipmentRequest {
-  trackingNumber: string;
-  company: string;
-  provider: string;
-}
-
-type ProviderResponse = {
+// src/types/api.types.ts
+export interface BaseApiResponse {
   success: boolean;
-  data: unknown;
-  error?: string;
-};
-
-async function trackParcel(request: ShipmentRequest): Promise<ProviderResponse> {
-  // Implementation
+  requestId: string;
+  timestamp: string;
 }
+
+export interface ErrorResponse extends BaseApiResponse {
+  success: false;
+  error: {
+    status: number;
+    code: string;
+    message: string;
+    company?: string;
+    action?: string;
+    errorFields?: ZodIssue[];
+  };
+}
+
+export interface SuccessResponse<T> extends BaseApiResponse {
+  success: true;
+  data: T;
+}
+
+export type ApiResponse<T> = SuccessResponse<T> | ErrorResponse;
+```
+
+Provider-specific example:
+
+```typescript
+// src/types/providers/ecotrack/createParcel.types.ts
+export interface CreateParcelRequest {
+  // ...fields
+}
+export interface CreateParcelResponseSuccess {
+  success: true;
+  tracking: string;
+}
+export interface CreateParcelResponseError {
+  message: string;
+  errors: Record<string, string[]>;
+}
+export type CreateParcelResponse =
+  | CreateParcelResponseSuccess
+  | CreateParcelResponseError;
 ```
 
 ## API Design Conventions
@@ -150,26 +172,29 @@ async function trackParcel(request: ShipmentRequest): Promise<ProviderResponse> 
 
 ### Action Configuration
 
-The `actions` configuration maps provider actions to their HTTP methods:
+The `actions` configuration maps provider actions to their HTTP methods and endpoints:
 
 ```typescript
 export const actions = {
-  ecotrack: {
-    trackParcel: "GET",
-    createParcel: "POST",
-    updateParcel: "PUT",
-    deleteParcel: "DELETE"
-  },
+  ecotrack: ecotrackActions,
   yalidine: {
-    trackParcel: "GET",
-    createParcel: "POST"
-  }
-} as const;
+    createParcel: {
+      endpoint: "...",
+      method: "POST",
+    },
+  },
+  noest: {
+    createParcel: {
+      endpoint: "...",
+      method: "POST",
+    },
+  },
+};
 ```
 
 This structure allows for:
 
-- Direct lookup of HTTP methods by action name
+- Direct lookup of HTTP methods and endpoints by action name
 - Type-safe action names
 - Easy validation of available actions
 - Simple addition of new actions
@@ -198,69 +223,21 @@ interface ApiResponse<T> {
 ### Error Handling
 
 - Use proper HTTP status codes
-- Implement global error handling middleware
-- Log errors appropriately
-- Provide user-friendly error messages
-- Include error tracking IDs
+- Return detailed error objects in a consistent format
+- Include validation errors as needed
 
 ## Git Workflow
 
-### Branch Naming
-
-- Feature branches: `feature/description`
-- Bug fixes: `fix/description`
-- Hotfixes: `hotfix/description`
-- Releases: `release/version`
-
-### Commit Messages
-
-- Use past tense
-- Start with a verb
-- Keep first line under 50 characters
-- Use body for detailed explanation
-- Reference issues when applicable
-
-Example:
-
-```bash
-feat: added EcoTrack parcel tracking
-
-- Implemented tracking endpoint
-- Added error handling
-- Added request validation
-
-Closes #123
-```
+- Use feature branches for new features/bugfixes
+- Write clear, descriptive commit messages
+- Rebase and squash commits before merging to main
+- Ensure all code passes linting and tests before merging
 
 ## Documentation
 
-### Code Comments
-
-- Use JSDoc for function documentation
-- Comment complex business logic
-- Keep comments up to date
-- Use TODO comments for future improvements
-
-Example:
-
-```typescript
-/**
- * Tracks a parcel using the specified provider
- * @param request - The tracking request parameters
- * @returns The tracking response from the provider
- * @throws {ApiError} If the provider request fails
- */
-async function trackShipment(request: ShipmentRequest): Promise<ProviderResponse> {
-  // Implementation
-}
-```
-
-### API Documentation
-
-- Document all API endpoints
-- Include request/response examples
-- Document error scenarios
-- Keep documentation up to date with code changes
+- Document all public functions and types
+- Keep README.md up to date with setup and usage instructions
+- Update this conventions file as the codebase evolves
 
 ## Best Practices
 
@@ -270,96 +247,20 @@ async function trackShipment(request: ShipmentRequest): Promise<ProviderResponse
    - Log errors appropriately
    - Provide user-friendly error messages
 
-2. **HTTP Client Usage**
-   - Use `axios` for making HTTP requests
-   - Configure retries and timeouts
-   - Implement proper error handling
-   - Use request/response interceptors
-
-   Example configuration:
-
-```typescript
-import axios from "axios";
-import axiosRetry from "axios-retry";
-
-// Create axios instance
-const client = axios.create({
-  timeout: 5000,
-  headers: {
-    "Content-Type": "application/json"
-  }
-});
-
-// Configure retries
-axiosRetry(client, {
-  retries: 3,
-  retryDelay: (retryCount) => {
-    return retryCount * 1000; // Progressive delay
-  },
-  retryCondition: (error) => {
-    return axiosRetry.isNetworkOrIdempotentRequestError(error) || // Default retry conditions
-           error.response?.status === 429 || // Rate limit
-           error.response?.status >= 500;    // Server errors
-  }
-});
-
-// Request interceptor
-client.interceptors.request.use(
-  (config) => {
-    // Add auth headers, etc.
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
-
-// Response interceptor
-client.interceptors.response.use(
-  (response) => {
-    return response;
-  },
-  (error) => {
-    // Log retry attempts
-    if (error.config?.__retryCount) {
-      console.log(`Retry attempt ${error.config.__retryCount} for ${error.config.url}`);
-    }
-
-    // Handle specific error cases
-    if (error.response?.status === 429) {
-      console.log("Rate limited, waiting before retry...");
-    }
-
-    return Promise.reject(error);
-  }
-);
-
-// Usage example
-try {
-  const response = await client.post("/api/endpoint", {
-    // request body
-  });
-} catch (error) {
-  if (axios.isAxiosError(error)) {
-    console.error("Request failed:", error.response?.data);
-  }
-}
-```
-
-3. **Performance**
+2. **Performance**
    - Implement proper caching strategies
    - Use connection pooling
    - Monitor response times
    - Optimize database queries
 
-4. **Security**
+3. **Security**
    - Validate all input data
    - Implement proper authentication
    - Use environment variables for sensitive data
    - Follow security best practices
    - Rate limit API requests
 
-5. **Testing**
+4. **Testing**
    - Write unit tests for utilities
    - Write integration tests for API endpoints
    - Maintain good test coverage

@@ -9,10 +9,10 @@ type Env = {
 
 const v1 = new Hono<Env>();
 
-v1.all("/v1/:company/:action", companyActionValidation, async (c) => {
+v1.all("/v1/:company/:action/:id?", companyActionValidation, async (c) => {
   const { action } = c.req.param();
   const provider = c.get("provider");
-  const module = await import(`../providers/${provider}/${action}.ts`);
+  const module = await import(`../providers/${provider}/actions/${action}.ts`);
   const actionFn = module.default;
   const data = await c.req.json();
 

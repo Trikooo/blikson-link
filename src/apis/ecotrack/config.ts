@@ -1,6 +1,10 @@
-import { EcotrackActionsType } from '../../types/providers/ecotrack';
+import { ProviderActions } from "../../types/config.types";
 
-export const ecotrackActions: EcotrackActionsType = {
+export const ecotrackActions: ProviderActions = {
+  getParcels: {
+    endpoint: "/api/v1/get/orders",
+    method: "GET",
+  },
   createParcel: {
     endpoint: "/api/v1/create/order",
     method: "POST",
@@ -17,7 +21,8 @@ export const ecotrackActions: EcotrackActionsType = {
     endpoint: "/api/v1/delete/order",
     method: "DELETE",
   },
-  shipParcel: { // Expedier
+  // Expedier
+  shipParcel: {
     endpoint: "/api/v1/valid/order",
     method: "POST",
   },
@@ -39,10 +44,6 @@ export const ecotrackActions: EcotrackActionsType = {
   },
   getTrackingInfo: {
     endpoint: "/api/v1/get/tracking/info",
-    method: "GET",
-  },
-  listParcels: {
-    endpoint: "/api/v1/get/orders",
     method: "GET",
   },
   filterParcelsByStatus: {
