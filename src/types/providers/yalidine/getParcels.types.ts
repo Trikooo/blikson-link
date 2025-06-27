@@ -131,6 +131,7 @@ export type YalidineParcelStatus =
   | "Retour à retirer"
   | "Retour vers vendeur"
   | "Retourné au vendeur"
+  | "Alerte résolue"
   | "Echange échoué";
 
 // 🔠 Enum: payment status
