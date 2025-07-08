@@ -3,268 +3,151 @@
 ## Table of Contents
 
 - [Project Overview](#project-overview)
-- [General Guidelines](#general-guidelines)
-- [Code Style](#code-style)
-- [File Structure](#file-structure)
+- [Directory Structure](#directory-structure)
 - [Naming Conventions](#naming-conventions)
-- [TypeScript Conventions](#typescript-conventions)
-- [API Design Conventions](#api-design-conventions)
+- [TypeScript & API Conventions](#typescript--api-conventions)
+- [Error Handling & Logging](#error-handling--logging)
+- [Testing](#testing)
 - [Git Workflow](#git-workflow)
 - [Documentation](#documentation)
+- [Best Practices](#best-practices)
+
+---
 
 ## Project Overview
 
-Blikson Link is a backend API gateway that unifies communication with multiple delivery companies through their software providers (like EcoTrack, Yalidine, etc.). It acts as a forwarding layer that standardizes how data is requested and returned.
+Blikson Link is a backend API gateway that unifies communication with multiple delivery companies (providers) such as EcoTrack and Yalidine. It acts as a proxy, standardizing requests and responses, handling validation, and providing a consistent developer experience.
 
-## General Guidelines
+---
 
-- Follow the principle of "Clean Code" - code should be readable, maintainable, and self-documenting
-- Keep functions small and focused on a single responsibility
-- Use meaningful variable and function names
-- Comment complex logic, but prefer self-documenting code
-- Follow the DRY (Don't Repeat Yourself) principle
-- Keep files focused and avoid creating monolithic modules
-- Handle errors gracefully and provide meaningful error messages
-- Use proper logging for debugging and monitoring
-
-## Code Style
-
-- Use 2 spaces for indentation
-- Use semicolons at the end of statements
-- Use double quotes for strings
-- Use camelCase for variables and functions
-- Use PascalCase for types and interfaces
-- Maximum line length: 100 characters
-- Use trailing commas in multi-line objects and arrays
-- Use template literals for string interpolation
-
-## File Structure
+## Directory Structure
 
 ```bash
 blikson-link/
 │
 ├── src/
-│   ├── apis/                    # API provider implementations
-│   │   ├── ecotrack/           # EcoTrack provider
-│   │   │   ├── actions/        # API action handlers (per action, e.g., createParcel.ts)
-│   │   │   ├── config.ts       # Provider configuration (endpoints, methods)
-│   │   │   └── utils.ts        # Provider-specific utilities (if any)
-│   │   ├── yalidine/           # Yalidine provider (structure to match ecotrack as implemented)
-│   │   └── noest/              # Noest provider (structure to match ecotrack as implemented)
-│   │
-│   ├── config/                 # Global configuration
-│   │   ├── actions.ts          # Maps provider actions to endpoints/methods
-│   │   └── companies.ts        # Company mappings and metadata
-│   │
-│   ├── routes/                 # API route definitions
-│   │   └── v1.ts               # Version 1 API routes
-│   │
-│   ├── middleware/             # Request/response middleware
-│   │   └── companyActionValidation.ts # Middleware for validating company/action
-│   │
-│   ├── types/                  # TypeScript type definitions
-│   │   ├── api.types.ts        # Common API types (requests, responses)
-│   │   ├── config.types.ts     # Config and provider types
-│   │   └── providers/          # Provider-specific types
-│   │       └── ecotrack/       # Ecotrack-specific types (one file per action, e.g., createParcel.types.ts)
-│   │
-│   ├── utils/                  # Utility functions
-│   │   └── request.ts          # Request handling utilities
-│   │
-│   └── main.ts                 # Application entry point
+│   ├── apis/                # Provider-specific API logic (ecotrack, yalidine, etc.)
+│   │   └── {provider}/
+│   │       ├── config.ts
+│   │       ├── utils.ts
+│   │       ├── services/
+│   │       └── models/
+│   ├── config/              # Global configuration (actions, companies, etc.)
+│   ├── constants/           # Shared constants (e.g., wilayas)
+│   ├── errors/              # Error and exception classes, error handler
+│   ├── lib/                 # Library code (e.g., env)
+│   ├── middleware/          # Hono middleware (error handling, logging, validation, etc.)
+│   ├── plugins/             # Optional plugins
+│   ├── public/              # Static assets (favicon, logo, etc.)
+│   ├── routes/              # API route definitions (e.g., v1.ts)
+│   ├── schemas/             # Zod schemas for validation
+│   ├── types/               # TypeScript types and interfaces
+│   │   └── providers/       # Provider-specific types
+│   ├── utils/               # Utility functions (request, response, logging, etc.)
+│   └── main.ts              # Application entry point
 │
-├── .env                        # Environment variables
-├── bunfig.toml                 # Bun configuration
-├── README.md                   # Project documentation
-└── .gitignore                  # Git ignore rules
+├── test/                    # Test files (mirrors provider structure)
+├── README.md
+├── CONVENTIONS.md
+├── package.json
+├── bunfig.toml
+├── tsconfig.json
+└── .gitignore
 ```
+
+---
 
 ## Naming Conventions
 
-### Files and Directories
+- **Directories:** Lowercase (e.g., `ecotrack/`, `yalidine/`)
+- **Files:** camelCase (e.g., `createParcel.ts`, `getDesksQuerySchema.ts`)
+- **Type files:** `.types.ts` suffix (e.g., `create-parcel.types.ts`)
+- **Schemas:** `.schemas.ts` suffix for Zod schemas
+- **Error/Exception Classes:**  
+  - Classes extending `HTTPException` use the `Exception` suffix (e.g., `ApiException`, `TimeoutException`)
+  - Classes extending `Error` use the `Error` suffix (e.g., `UnexpectedResponseError`)
+- **Tests:** `*.test.ts` in `test/` directory, mirroring provider structure
 
-- API provider directories: lowercase (e.g., `ecotrack/`, `yalidine/`)
-- Action files: camelCase (e.g., `createParcel.ts`)
-- Type files: camelCase with `.types.ts` suffix (e.g., `api.types.ts`, `createParcel.types.ts`)
-- Configuration files: `config.ts`
-- Utility files: camelCase (e.g., `request.ts`)
-- Test files: `*.test.ts` or `*.spec.ts`
+---
 
-### Functions and Variables
+## TypeScript & API Conventions
 
-- Use camelCase for variables and functions
-- Use descriptive names that indicate purpose
-- Boolean variables should start with is/has/should (e.g., `isValid`, `hasError`)
-- API action handlers should be verbs (e.g., `createParcel`, `trackParcel`)
-- The noun chosen for the parcel is "Parcel"; do not use synonyms such as "Package"
+- **Always use TypeScript** for new code.
+- **Explicit types** for all function parameters and return values.
+- **Provider-specific types** are grouped under `src/types/providers/{provider}/` and named by action.
+- **API response types** are generic and composable, supporting both success and error cases.
+- **Error responses** always include a `timestamp` and `requestId`.
 
-## TypeScript Conventions
-
-- Always use TypeScript for new code
-- Define explicit types for function parameters and return values
-- Use interfaces for API request/response types
-- Use type aliases for complex types and enums (e.g., union string types)
-- Avoid using `any` type
-- Use proper type imports/exports
-- Use type guards when necessary
-- Provider-specific types are grouped under `src/types/providers/{provider}/` and named according to the action (e.g., `createParcel.types.ts`)
-- All type files use the `.types.ts` suffix
-- API response types should be generic and composable, supporting both success and error cases
-
-Example:
+### Example: ErrorResponse
 
 ```typescript
-// src/types/api.types.ts
-export interface BaseApiResponse {
-  success: boolean;
-  requestId: string;
-  timestamp: string;
-}
-
 export interface ErrorResponse extends BaseApiResponse {
   success: false;
-  error: {
-    status: number;
-    code: string;
-    message: string;
-    company?: string;
-    action?: string;
-    errorFields?: ZodIssue[];
-  };
-}
-
-export interface SuccessResponse<T> extends BaseApiResponse {
-  success: true;
-  data: T;
-}
-
-export type ApiResponse<T> = SuccessResponse<T> | ErrorResponse;
-```
-
-Provider-specific example:
-
-```typescript
-// src/types/providers/ecotrack/createParcel.types.ts
-export interface CreateParcelRequest {
-  // ...fields
-}
-export interface CreateParcelResponseSuccess {
-  success: true;
-  tracking: string;
-}
-export interface CreateParcelResponseError {
   message: string;
-  errors: Record<string, string[]>;
-}
-export type CreateParcelResponse =
-  | CreateParcelResponseSuccess
-  | CreateParcelResponseError;
-```
-
-## API Design Conventions
-
-### Route Structure
-
-- Use versioned routes (e.g., `/v1/:company/:action`)
-- Keep routes RESTful and resource-oriented
-- Use consistent HTTP methods (GET, POST, PUT, DELETE)
-- Implement proper error handling and status codes
-
-### Action Configuration
-
-The `actions` configuration maps provider actions to their HTTP methods and endpoints:
-
-```typescript
-export const actions = {
-  ecotrack: ecotrackActions,
-  yalidine: {
-    createParcel: {
-      endpoint: "...",
-      method: "POST",
-    },
-  },
-  noest: {
-    createParcel: {
-      endpoint: "...",
-      method: "POST",
-    },
-  },
-};
-```
-
-This structure allows for:
-
-- Direct lookup of HTTP methods and endpoints by action name
-- Type-safe action names
-- Easy validation of available actions
-- Simple addition of new actions
-
-### Response Format
-
-- Use consistent response structure
-- Include proper status codes
-- Provide meaningful error messages
-- Include request tracking IDs
-
-Example:
-
-```typescript
-interface ApiResponse<T> {
-  success: boolean;
-  data?: T;
-  error?: {
-    code: string;
-    message: string;
-  };
-  requestId: string;
+  issues?: Partial<ZodIssue>[];
+  timestamp: string;
 }
 ```
 
-### Error Handling
+### Provider-specific example
 
-- Use proper HTTP status codes
-- Return detailed error objects in a consistent format
-- Include validation errors as needed
+```typescript
+// src/types/providers/ecotrack/create-parcel.types.ts
+export interface CreateParcelRequest { /* ... */ }
+export interface CreateParcelResponseSuccess { /* ... */ }
+export interface CreateParcelResponseError { /* ... */ }
+export type CreateParcelResponse = CreateParcelResponseSuccess | CreateParcelResponseError;
+```
+
+---
+
+## Error Handling & Logging
+
+- **All errors** are handled centrally in `middleware/on-error.ts`.
+- **Custom exceptions** (extending `HTTPException`) use the `Exception` suffix.
+- **Unexpected or logic errors** (extending `Error`) use the `Error` suffix.
+- **Error responses** are consistent, with a timestamp, requestId, and provider.
+- **Logging:**  
+  - All errors except validation errors are logged using `c.var.logger.error`.
+  - Logs include message, name, stack, requestId, provider, path, method, status, and timestamp.
+- **Proxy logic:**  
+  - If the proxy receives a 404, 405, or 422 from a provider, it is treated as an internal server error, as this indicates a bug in proxy logic.
+
+---
+
+## Testing
+
+- **Test files** are located in `test/`, mirroring the provider and action structure.
+- **Test file naming:** `*.test.ts`
+- **Write both unit and integration tests** for API endpoints and utilities.
+
+---
 
 ## Git Workflow
 
-- Use feature branches for new features/bugfixes
-- Write clear, descriptive commit messages
-- Rebase and squash commits before merging to main
-- Ensure all code passes linting and tests before merging
+- Use feature branches for new features/bugfixes.
+- Write clear, descriptive commit messages.
+- Rebase and squash commits before merging to main.
+- Ensure all code passes linting and tests before merging.
+
+---
 
 ## Documentation
 
-- Document all public functions and types
-- Keep README.md up to date with setup and usage instructions
-- Update this conventions file as the codebase evolves
+- Document all public functions, types, and middleware with JSDoc.
+- Keep `README.md` and `CONVENTIONS.md` up to date.
+- Update conventions as the codebase evolves.
+
+---
 
 ## Best Practices
 
-1. **Error Handling**
-   - Use try-catch blocks for async operations
-   - Implement proper error boundaries
-   - Log errors appropriately
-   - Provide user-friendly error messages
+- **Error Handling:** Use try-catch for async operations, log errors, and provide user-friendly messages.
+- **Performance:** Use caching, connection pooling, and monitor response times.
+- **Security:** Validate all input, use environment variables for secrets, and implement authentication and rate limiting.
+- **Testing:** Maintain good test coverage with proper libraries and tools.
 
-2. **Performance**
-   - Implement proper caching strategies
-   - Use connection pooling
-   - Monitor response times
-   - Optimize database queries
-
-3. **Security**
-   - Validate all input data
-   - Implement proper authentication
-   - Use environment variables for sensitive data
-   - Follow security best practices
-   - Rate limit API requests
-
-4. **Testing**
-   - Write unit tests for utilities
-   - Write integration tests for API endpoints
-   - Maintain good test coverage
-   - Use proper testing libraries and tools
+---
 
 ## Additional Resources
 

@@ -1,4 +1,4 @@
-import { Company } from "../types/config.types";
+import { Company } from "../types/config-types";
 
 export const companies: Record<string, Company> = {
   yalidine: {
@@ -35,6 +35,11 @@ export const companies: Record<string, Company> = {
     provider: "yalidine",
     active: true,
     endpoint: "https://api.yalitec.app/api/v1"
+  },
+  anderson: {
+    provider: "ecotrack",
+    active: true,
+    endpoint: "https://anderson-ecommerce.ecotrack.dz",
   }
 }
 

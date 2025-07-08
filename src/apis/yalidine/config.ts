@@ -1,4 +1,4 @@
-import { ProviderActions } from "../../types/config.types";
+import { ProviderActions } from "../../types/config-types";
 
 export const yalidineActions: ProviderActions = {
   getParcels: {

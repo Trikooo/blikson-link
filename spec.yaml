@@ -1,0 +1,37 @@
+openapi: 3.1.0
+info:
+  title: Blikson Link API
+  version: 1.0.0
+  description: |
+    🚀 Unified API for multiple Algerian shipping companies.One request format, multiple providers.
+    Focus on your business, not API integrations.
+tags:
+  - name: Ecotrack
+    description: Create parcel with Ecotrack
+  - name: Yalidine
+    description: Create parcel with Yalidine
+
+x-tagGroups:
+  - name: Algeria
+    tags:
+      - Ecotrack
+      - Yalidine
+
+paths:
+  /ecotrack/create-parcel:
+    post:
+      tags:
+        - Ecotrack
+      summary: CreateParcel
+      responses:
+        "200":
+          description: OK
+
+  /yalidine/create-parcel:
+    post:
+      tags:
+        - Yalidine
+      summary: CreateParcel
+      responses:
+        "200":
+          description: OK

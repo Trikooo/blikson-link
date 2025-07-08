@@ -1,4 +1,4 @@
-import { AxiosRequestConfig } from "axios";
+import { AxiosHeaders, AxiosRequestConfig } from "axios";
 import { Context } from "hono";
 
 /**
@@ -16,21 +16,19 @@ export interface RateLimitHeaders {
 /**
  * Constructs headers for EcoTrack API requests
  * @param c - The Hono context containing request headers
- * @returns {AxiosRequestConfig} Configuration object with headers for EcoTrack API
- * @throws {Error} When X-ECOTRACK-TOKEN header is missing
+ * @returns  Headers object
+ * @throws  When ecotrack-token header is missing
  */
-export function constructHeaders(c: Context): AxiosRequestConfig {
-  const token = c.req.header("X-ECOTRACK-TOKEN")
+export function constructHeaders(c: Context) {
+  const token = c.req.header("ecotrack-token");
   if (!token) {
     throw new Error("EcoTrack API token is required");
   }
 
   return {
-    headers: {
-      "Authorization": `Bearer ${token}`,
-      "Content-Type": "application/json",
-      "Accept": "application/json"
-    }
+    Authorization: `Bearer ${token}`,
+    "Content-Type": "application/json",
+    Accept: "application/json",
   };
 }
 
@@ -47,6 +45,6 @@ export function checkRateLimits(headers: Partial<RateLimitHeaders>) {
     isNearDailyLimit: remainingDay < 100,
     isNearHourlyLimit: remainingHour < 100,
     remainingDay,
-    remainingHour
+    remainingHour,
   };
 }
