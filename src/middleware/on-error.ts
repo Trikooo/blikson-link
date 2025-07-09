@@ -1,7 +1,11 @@
 import { ApiException, ValidationException } from "@/errors/api-errors";
 import { Context } from "hono";
 import { AppBindings, ErrorResponse } from "@/types/api-types";
+import * as Sentry from "@sentry/bun";
 
+Sentry.init({
+  dsn: "https://835ce112430935187acb4f3f33b05054@o4509638203146240.ingest.de.sentry.io/4509638230736976",
+});
 /**
  * Global error-handling middleware for the API.
  *
@@ -14,10 +18,9 @@ import { AppBindings, ErrorResponse } from "@/types/api-types";
  * @param c - The Hono context, including logger and request metadata.
  * @returns A JSON error response with appropriate status code and context.
  */
-export default function onError(error: Error, c: Context<AppBindings>) {
-  // Log all errors except validation errors (optional: adjust as needed)
+export default function onError(error: any, c: Context<AppBindings>) {
   if (!(error instanceof ValidationException)) {
-    c.var.logger.error({
+    const errorLog = {
       message: error.message,
       name: error.name,
       stack: error.stack,
@@ -27,6 +30,15 @@ export default function onError(error: Error, c: Context<AppBindings>) {
       method: c.req.method,
       status: (error as any).status || 500,
       timestamp: new Date().toISOString(),
+      actionMetaData: c.get("actionMetaData"),
+      companyMetaData: c.get("companyMetaData"),
+      providerError: error.providerError?.response?.data,
+    };
+    c.var.logger.error(errorLog);
+    Sentry.withScope((scope) => {
+      scope.setContext("request", errorLog);
+      scope.setTag("error.name", error.name);
+      Sentry.captureException(error);
     });
   }
 

@@ -1,45 +1,44 @@
-import { Company } from "../types/config-types";
+import { CompanyMetaData } from "../types/config-types";
 
-export const companies: Record<string, Company> = {
+export const companies: Record<string, CompanyMetaData> = {
   yalidine: {
     provider: "yalidine",
     active: true,
-    endpoint: "https://api.yalidine.app/api/v1"
+    baseUrl: "https://api.yalidine.app/api/v1",
   },
   guepex: {
     provider: "yalidine",
     active: true,
-    endpoint: "https://api.yalidine.app/api/v1"
+    baseUrl: "https://api.yalidine.app/api/v1",
   },
   easyAndSpeed: {
     provider: "yalidine",
     active: true,
-    endpoint: "https://api.yalidine.app/api/v1"
+    baseUrl: "https://api.yalidine.app/api/v1",
   },
   zimouExpress: {
     provider: "yalidine",
     active: true,
-    endpoint: "https://api.yalidine.app/api/v1"
+    baseUrl: "https://api.yalidine.app/api/v1",
   },
   weCanServices: {
     provider: "yalidine",
     active: true,
-    endpoint: "https://api.yalidine.app/api/v1"
+    baseUrl: "https://api.yalidine.app/api/v1",
   },
   speedMail: {
     provider: "yalidine",
     active: true,
-    endpoint: "https://api.yalidine.app/api/v1"
+    baseUrl: "https://api.yalidine.app/api/v1",
   },
   yalitec: {
     provider: "yalidine",
     active: true,
-    endpoint: "https://api.yalitec.app/api/v1"
+    baseUrl: "https://api.yalitec.app/api/v1",
   },
   anderson: {
     provider: "ecotrack",
     active: true,
-    endpoint: "https://anderson-ecommerce.ecotrack.dz",
-  }
-}
-
+    baseUrl: "https://anderson-ecommerce.ecotrack.dz/api/v1",
+  },
+};

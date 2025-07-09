@@ -5,6 +5,8 @@ import { join } from "path";
 import css from "@/utils/test-css";
 import { getBaseUrl } from "@/lib/env";
 import createApp from "./app";
+//...
+import { HTTPException } from "hono/http-exception";
 
 const app = createApp();
 
@@ -41,6 +43,7 @@ app.use(
     url: "/v1/openapi.yaml",
   })
 );
+
 
 // app.get("/timeout", async (c) => {
 //   try {

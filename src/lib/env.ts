@@ -4,15 +4,22 @@ import { expand } from "dotenv-expand";
 
 expand(config());
 
-const EnvSchema = z.object({
-  NODE_ENV: z.enum(["development", "production"]).default("development"),
-  LOG_LEVEL: z
-    .enum(["debug", "info", "warn", "error", "fatal", "trace"])
-    .default("info"),
-  HOST: z.string().default("localhost"),
-  PORT: z.coerce.number().default(3000),
-  PROTOCOL: z.enum(["http", "https"]).default("http"),
-});
+const EnvSchema = z
+  .object({
+    NODE_ENV: z.enum(["development", "production"]).default("development"),
+    LOG_LEVEL: z
+      .enum(["debug", "info", "warn", "error", "fatal", "trace"])
+      .default("info"),
+    HOST: z.string().default("localhost"),
+    PORT: z.coerce.number().default(3000),
+    PROTOCOL: z.enum(["http", "https"]).default("http"),
+    SENTRY_DSN: z.string().url().optional(),
+  })
+  .refine((env) => env.NODE_ENV === "development" || !!env.SENTRY_DSN, {
+    message: "SENTRY_DSN is required in production",
+    path: ["SENTRY_DSN"],
+  });
+
 export type Env = z.infer<typeof EnvSchema>;
 
 let env: Env;

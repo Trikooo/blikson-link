@@ -1,5 +1,5 @@
 import client from "@/utils/request";
-import { ecotrackActions } from "@ecotrack/config";
+import { buildUrl } from "@/utils/build-url";
 import { constructHeaders } from "@ecotrack/utils";
 import {
   EcotrackGetCommunesQueryParams,
@@ -22,10 +22,10 @@ import { UnexpectedResponseError } from "@/errors/api-errors";
  * @returns The raw response containing communes.
  */
 export async function fetchCommunes(c: Context<AppBindings>) {
-  const { endpoint } = ecotrackActions.getCommunes;
-  const companyUrl = companies[c.get("company")].endpoint;
+  const { endpoint } = c.get("actionMetaData");
+  const { baseUrl } = c.get("companyMetaData");
 
-  const { data } = await client.get(`${companyUrl}/${endpoint}`, {
+  const { data } = await client.get(buildUrl(baseUrl, endpoint), {
     headers: constructHeaders(c),
     params: constructParams(c),
   });

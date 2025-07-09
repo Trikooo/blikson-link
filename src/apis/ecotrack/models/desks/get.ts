@@ -24,3 +24,8 @@ export default async function GET(c: Context<AppBindings>) {
     handleApiError(error);
   }
 }
+
+export const metaData = {
+  endpoint: "api/get/get/get/communes",
+  method: "GET",
+};

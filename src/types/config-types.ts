@@ -1,9 +1,10 @@
+import { z } from "zod";
 export type HttpMethod = "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
 
-export interface Company {
+export interface CompanyMetaData {
   provider: Provider;
   active: boolean;
-  endpoint: string;
+  baseUrl: string;
 }
 
 export type Actions = {
@@ -16,8 +17,9 @@ export type ProviderActions = {
     method: HttpMethod;
   };
 };
-
-import { z } from "zod";
-
+export type ActionMetaData = {
+  endpoint: string;
+  method: HttpMethod;
+};
 export const providerSchema = z.enum(["ecotrack", "yalidine", "noest"]);
 export type Provider = z.infer<typeof providerSchema>;

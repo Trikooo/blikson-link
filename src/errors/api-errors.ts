@@ -8,14 +8,16 @@ import { Context } from "hono";
 // Base API Exception class
 export class ApiException extends HTTPException {
   public readonly issues?: ZodIssue[];
+  public readonly providerError: any;
 
   constructor(
     status: ContentfulStatusCode,
     message: string,
-    issues?: ZodIssue[]
+    issues?: ZodIssue[],
+    providerError?: any
   ) {
     super(status, { message });
-
+    this.providerError = providerError;
     this.issues = issues;
   }
 
@@ -41,23 +43,24 @@ export class ApiException extends HTTPException {
 export class ValidationException extends ApiException {
   constructor(
     issues: ZodIssue[],
-    message: string = "Request data is invalid. Check the 'issues' field for details."
+    message: string = "Request data is invalid. Check the 'issues' field for details.",
+    providerError?: any
   ) {
-    super(httpStatusCodes.UNPROCESSABLE_ENTITY, message, issues);
+    super(httpStatusCodes.UNPROCESSABLE_ENTITY, message, issues, providerError);
   }
 }
 
 // Authentication Exception - 401
 export class AuthenticationException extends ApiException {
-  constructor(message: string = "Authentication required", company?: string) {
-    super(httpStatusCodes.UNAUTHORIZED, message);
+  constructor(message: string = "Authentication required", providerError?: any) {
+    super(httpStatusCodes.UNAUTHORIZED, message, undefined, providerError);
   }
 }
 
 // Authorization Exception - 403
 export class AuthorizationException extends ApiException {
-  constructor(message: string = "Access denied") {
-    super(httpStatusCodes.FORBIDDEN, message);
+  constructor(message: string = "Access denied", providerError?: any) {
+    super(httpStatusCodes.FORBIDDEN, message, undefined, providerError);
   }
 }
 
@@ -95,29 +98,29 @@ export class MethodNotAllowedException extends ApiException {
 
 // Rate Limit Exception - 429
 export class RateLimitException extends ApiException {
-  constructor(message: string = "Rate limit exceeded") {
-    super(httpStatusCodes.TOO_MANY_REQUESTS, message);
+  constructor(message: string = "Rate limit exceeded", providerError?: any) {
+    super(httpStatusCodes.TOO_MANY_REQUESTS, message, undefined, providerError);
   }
 }
 
 // External Service Exception - 502
 export class ExternalServiceException extends ApiException {
-  constructor(message: string = "External service unavailable") {
-    super(httpStatusCodes.BAD_GATEWAY, message);
+  constructor(message: string = "External service unavailable", providerError?: any) {
+    super(httpStatusCodes.BAD_GATEWAY, message, undefined, providerError);
   }
 }
 
 // Timeout Exception - 408
 export class TimeoutException extends ApiException {
-  constructor(message: string = "Request timeout") {
-    super(httpStatusCodes.REQUEST_TIMEOUT, message);
+  constructor(message: string = "Request timeout", providerError?: any) {
+    super(httpStatusCodes.REQUEST_TIMEOUT, message, undefined, providerError);
   }
 }
 
 // Internal Server Exception - 500
 export class InternalServerException extends ApiException {
-  constructor(message: string = "Internal server error") {
-    super(httpStatusCodes.INTERNAL_SERVER_ERROR, message);
+  constructor(message: string = "Internal server error", providerError?: any) {
+    super(httpStatusCodes.INTERNAL_SERVER_ERROR, message, undefined, providerError);
   }
 }
 

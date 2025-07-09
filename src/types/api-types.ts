@@ -1,6 +1,7 @@
 import { PinoLogger } from "hono-pino";
 import { ZodIssue } from "zod";
-import { Provider } from "./config-types";
+import { ActionMetaData, CompanyMetaData, Provider } from "./config-types";
+import { Context } from "hono";
 
 // Base API response interface that all responses should extend
 export interface BaseApiResponse {
@@ -32,5 +33,9 @@ export type AppBindings = {
     company: string;
     provider: Provider;
     logger: PinoLogger;
+    actionPath: string;
+    actionFn: (c: Context<any>) => Promise<any>;
+    actionMetaData: ActionMetaData
+    companyMetaData: CompanyMetaData
   };
 };
