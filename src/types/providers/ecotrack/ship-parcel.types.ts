@@ -13,6 +13,6 @@ export interface EcotrackShipParcelResponseError {
   errors: Record<string, string[]>;
 }
 
-export type EcotrackShipParcelResponse =
-  | EcotrackShipParcelResponseError
-  | EcotrackShipParcelResponseSuccess;
+export type EcotrackShipParcelResponse
+  = | EcotrackShipParcelResponseError
+    | EcotrackShipParcelResponseSuccess;

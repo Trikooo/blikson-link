@@ -1,5 +1,5 @@
 // ✅ Request Params
-export type YalidineGetWilayasQueryParams = {
+export interface YalidineGetWilayasQueryParams {
   id?: string; // comma-separated list
   name?: string;
   fields?: string;
@@ -8,35 +8,35 @@ export type YalidineGetWilayasQueryParams = {
   order_by?: "id" | "name";
   desc?: null;
   asc?: null;
-};
+}
 
 // ✅ Success Response
-export type YalidineWilaya = {
+export interface YalidineWilaya {
   id: number;
   name: string;
   zone: number;
   is_deliverable: boolean;
-};
+}
 
-export type YalidineGetWilayasSuccessResponse = {
+export interface YalidineGetWilayasSuccessResponse {
   has_more: boolean;
   total_data: number;
   data: YalidineWilaya[];
   links: {
     self: string;
   };
-};
+}
 
 // ❌ Error Response
-export type YalidineGetWilayasErrorResponse = {
+export interface YalidineGetWilayasErrorResponse {
   error: {
     message: string;
     code: number;
     description: string;
   };
-};
+}
 
 // 🔁 Final Union Type
-export type YalidineGetWilayasResponse =
-  | YalidineGetWilayasSuccessResponse
-  | YalidineGetWilayasErrorResponse;
+export type YalidineGetWilayasResponse
+  = | YalidineGetWilayasSuccessResponse
+    | YalidineGetWilayasErrorResponse;

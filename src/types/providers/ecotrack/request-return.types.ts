@@ -13,6 +13,6 @@ export interface EcotrackRequestReturnResponseError {
   message: string;
 }
 
-export type EcotrackRequestReturnResponse =
-  | EcotrackRequestReturnResponseSuccess
-  | EcotrackRequestReturnResponseError;
+export type EcotrackRequestReturnResponse
+  = | EcotrackRequestReturnResponseSuccess
+    | EcotrackRequestReturnResponseError;

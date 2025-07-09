@@ -1,5 +1,5 @@
-import { join } from "path";
-import { existsSync, statSync } from "fs";
+import { existsSync, statSync } from "node:fs";
+import { join } from "node:path";
 
 /**
  * Recursively resolves the correct .ts file for a given action/subaction path.
@@ -17,7 +17,7 @@ export function resolveActionModule(basePath: string, segments: string[]): strin
   for (let i = 0; i < segments.length; i++) {
     const segment = segments[i];
     const filePath = join(currentPath, `${segment}.ts`); // e.g., .../create.ts
-    const dirPath = join(currentPath, segment);          // e.g., .../create/
+    const dirPath = join(currentPath, segment); // e.g., .../create/
 
     // 1. Check if the segment is a file (e.g., create.ts)
     if (existsSync(filePath) && statSync(filePath).isFile()) {

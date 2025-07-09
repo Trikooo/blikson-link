@@ -1,10 +1,11 @@
-import { ApiException, ValidationException } from "@/errors/api-errors";
-import { Context } from "hono";
-import { AppBindings, ErrorResponse } from "@/types/api-types";
+import type { Context } from "hono";
+import type { AppBindings, ErrorResponse } from "@/types/api-types";
 import * as Sentry from "@sentry/bun";
+import { ApiException, ValidationException } from "@/errors/api-errors";
+import env from "@/lib/env";
 
 Sentry.init({
-  dsn: "https://835ce112430935187acb4f3f33b05054@o4509638203146240.ingest.de.sentry.io/4509638230736976",
+  dsn: env.SENTRY_DSN,
 });
 /**
  * Global error-handling middleware for the API.

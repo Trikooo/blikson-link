@@ -18,7 +18,7 @@ export const ecotrackCommuneSchema = z.object({
 export const ecotrackGetCommunesResponseSuccessSchema = z.union([
   z.record(
     z.string().regex(/^\d+$/), // keys like "1", "2", ...
-    ecotrackCommuneSchema
+    ecotrackCommuneSchema,
   ),
   z.array(ecotrackCommuneSchema),
 ]);

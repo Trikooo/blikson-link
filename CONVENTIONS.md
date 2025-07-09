@@ -63,7 +63,7 @@ blikson-link/
 - **Files:** camelCase (e.g., `createParcel.ts`, `getDesksQuerySchema.ts`)
 - **Type files:** `.types.ts` suffix (e.g., `create-parcel.types.ts`)
 - **Schemas:** `.schemas.ts` suffix for Zod schemas
-- **Error/Exception Classes:**  
+- **Error/Exception Classes:**
   - Classes extending `HTTPException` use the `Exception` suffix (e.g., `ApiException`, `TimeoutException`)
   - Classes extending `Error` use the `Error` suffix (e.g., `UnexpectedResponseError`)
 - **Tests:** `*.test.ts` in `test/` directory, mirroring provider structure
@@ -107,10 +107,10 @@ export type CreateParcelResponse = CreateParcelResponseSuccess | CreateParcelRes
 - **Custom exceptions** (extending `HTTPException`) use the `Exception` suffix.
 - **Unexpected or logic errors** (extending `Error`) use the `Error` suffix.
 - **Error responses** are consistent, with a timestamp, requestId, and provider.
-- **Logging:**  
+- **Logging:**
   - All errors except validation errors are logged using `c.var.logger.error`.
   - Logs include message, name, stack, requestId, provider, path, method, status, and timestamp.
-- **Proxy logic:**  
+- **Proxy logic:**
   - If the proxy receives a 404, 405, or 422 from a provider, it is treated as an internal server error, as this indicates a bug in proxy logic.
 
 ---

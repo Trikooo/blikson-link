@@ -1,8 +1,7 @@
+import type { AppBindings } from "@/types/api-types";
 import { Hono } from "hono";
-import axios from "axios";
-import client from "@/utils/request";
 import { startServer } from "@/app";
-import { AppBindings } from "@/types/api-types";
+import client from "@/utils/request";
 
 const app = new Hono<AppBindings>();
 
@@ -12,10 +11,12 @@ app.get("/timeout", async (c) => {
       timeout: 1000,
     });
     return c.json({ data: response.data });
-  } catch (error: any) {
+  }
+  catch (error: any) {
     if (error.code === "ECONNABORTED") {
       return c.json({ error: error.code }, 504);
-    } else {
+    }
+    else {
       return c.json({ error: error.message }, 500);
     }
   }

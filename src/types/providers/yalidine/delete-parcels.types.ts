@@ -21,6 +21,6 @@ export interface YalidineDeleteParcelsResponseError {
 }
 
 // 🔁 Union Response Type
-export type YalidineDeleteParcelsResponse =
-  | YalidineDeleteParcelsResponseSuccess
-  | YalidineDeleteParcelsResponseError;
+export type YalidineDeleteParcelsResponse
+  = | YalidineDeleteParcelsResponseSuccess
+    | YalidineDeleteParcelsResponseError;

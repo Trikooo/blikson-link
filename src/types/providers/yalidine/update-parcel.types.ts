@@ -60,6 +60,6 @@ export interface YalidineUpdateParcelErrorResponse {
 }
 
 // 🔁 Union of success and error responses
-export type YalidineUpdateParcelResponse =
-  | YalidineUpdateParcelResponseSuccess
-  | YalidineUpdateParcelErrorResponse;
+export type YalidineUpdateParcelResponse
+  = | YalidineUpdateParcelResponseSuccess
+    | YalidineUpdateParcelErrorResponse;

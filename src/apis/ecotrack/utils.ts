@@ -1,5 +1,4 @@
-import { AxiosHeaders, AxiosRequestConfig } from "axios";
-import { Context } from "hono";
+import type { Context } from "hono";
 
 /**
  * Rate limit headers interface based on EcoTrack API documentation
@@ -26,9 +25,9 @@ export function constructHeaders(c: Context) {
   }
 
   return {
-    Authorization: `Bearer ${token}`,
+    "Authorization": `Bearer ${token}`,
     "Content-Type": "application/json",
-    Accept: "application/json",
+    "Accept": "application/json",
   };
 }
 
@@ -38,8 +37,8 @@ export function constructHeaders(c: Context) {
  * @returns Object containing rate limit status
  */
 export function checkRateLimits(headers: Partial<RateLimitHeaders>) {
-  const remainingDay = parseInt(headers["X-RateLimit-Remaining-Day"] || "0");
-  const remainingHour = parseInt(headers["X-RateLimit-Remaining-Hour"] || "0");
+  const remainingDay = Number.parseInt(headers["X-RateLimit-Remaining-Day"] || "0");
+  const remainingHour = Number.parseInt(headers["X-RateLimit-Remaining-Hour"] || "0");
 
   return {
     isNearDailyLimit: remainingDay < 100,

@@ -43,9 +43,9 @@ export interface YalidineGetParcelsResponseError {
 }
 
 // 🔁 Union of success and error responses
-export type YalidineParcelsResponse =
-  | YalidineGetParcelsResponseSuccess
-  | YalidineGetParcelsResponseError;
+export type YalidineParcelsResponse
+  = | YalidineGetParcelsResponseSuccess
+    | YalidineGetParcelsResponseError;
 
 // 📦 One parcel object
 export interface YalidineParcel {
@@ -101,64 +101,64 @@ export interface YalidineParcel {
 }
 
 // 🔠 Enum: status of the parcel
-export type YalidineParcelStatus =
-  | "Pas encore expédié"
-  | "A vérifier"
-  | "En préparation"
-  | "Pas encore ramassé"
-  | "Prêt à expédier"
-  | "Ramassé"
-  | "Bloqué"
-  | "Débloqué"
-  | "Transfert"
-  | "Expédié"
-  | "Centre"
-  | "En localisation"
-  | "Vers Wilaya"
-  | "Reçu à Wilaya"
-  | "En attente du client"
-  | "Prêt pour livreur"
-  | "Sorti en livraison"
-  | "En attente"
-  | "En alerte"
-  | "Tentative échouée"
-  | "Livré"
-  | "Echèc livraison"
-  | "Retour vers centre"
-  | "Retourné au centre"
-  | "Retour transfert"
-  | "Retour groupé"
-  | "Retour à retirer"
-  | "Retour vers vendeur"
-  | "Retourné au vendeur"
-  | "Alerte résolue"
-  | "Echange échoué";
+export type YalidineParcelStatus
+  = | "Pas encore expédié"
+    | "A vérifier"
+    | "En préparation"
+    | "Pas encore ramassé"
+    | "Prêt à expédier"
+    | "Ramassé"
+    | "Bloqué"
+    | "Débloqué"
+    | "Transfert"
+    | "Expédié"
+    | "Centre"
+    | "En localisation"
+    | "Vers Wilaya"
+    | "Reçu à Wilaya"
+    | "En attente du client"
+    | "Prêt pour livreur"
+    | "Sorti en livraison"
+    | "En attente"
+    | "En alerte"
+    | "Tentative échouée"
+    | "Livré"
+    | "Echèc livraison"
+    | "Retour vers centre"
+    | "Retourné au centre"
+    | "Retour transfert"
+    | "Retour groupé"
+    | "Retour à retirer"
+    | "Retour vers vendeur"
+    | "Retourné au vendeur"
+    | "Alerte résolue"
+    | "Echange échoué";
 
 // 🔠 Enum: payment status
-export type YalidinePaymentStatus =
-  | "not-ready"
-  | "ready"
-  | "receivable"
-  | "payed";
+export type YalidinePaymentStatus
+  = | "not-ready"
+    | "ready"
+    | "receivable"
+    | "payed";
 
 // 🔠 Enum: parcel type
 export type YalidineParcelType = "classic" | "ecommerce" | "multiseller";
 
 // 🔠 Enum: parcel sub type
-export type YalidineParcelSubType =
-  | "accuse"
-  | "exchange"
-  | "rcc"
-  | "rccback"
-  | "sm";
+export type YalidineParcelSubType
+  = | "accuse"
+    | "exchange"
+    | "rcc"
+    | "rccback"
+    | "sm";
 
 // 🔠 Enum: sort by fields
-export type YalidineOrderBy =
-  | "date_creation"
-  | "date_last_status"
-  | "tracking"
-  | "order_id"
-  | "import_id"
-  | "to_wilaya_id"
-  | "to_commune_id"
-  | "last_status";
+export type YalidineOrderBy
+  = | "date_creation"
+    | "date_last_status"
+    | "tracking"
+    | "order_id"
+    | "import_id"
+    | "to_wilaya_id"
+    | "to_commune_id"
+    | "last_status";

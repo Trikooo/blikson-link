@@ -65,6 +65,6 @@ export interface EcotrackGetParcelsResponseError {
   errors: Record<string, string[]>;
 }
 
-export type EcotrackGetOrdersResponse =
-  | EcotrackGetParcelsResponseSuccess
-  | EcotrackGetParcelsResponseError;
+export type EcotrackGetOrdersResponse
+  = | EcotrackGetParcelsResponseSuccess
+    | EcotrackGetParcelsResponseError;

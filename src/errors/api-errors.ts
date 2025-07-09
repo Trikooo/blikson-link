@@ -1,10 +1,10 @@
+import type { Context } from "hono";
+import type { ContentfulStatusCode } from "hono/utils/http-status";
+import type { ZodIssue } from "zod";
+import type { AppBindings, ErrorResponse } from "../types/api-types";
 import { HTTPException } from "hono/http-exception";
-import { AppBindings, ErrorResponse } from "../types/api-types";
-import { ZodIssue } from "zod";
-import { ContentfulStatusCode } from "hono/utils/http-status";
-import * as httpStatusCodes from "stoker/http-status-codes";
 
-import { Context } from "hono";
+import * as httpStatusCodes from "stoker/http-status-codes";
 // Base API Exception class
 export class ApiException extends HTTPException {
   public readonly issues?: ZodIssue[];
@@ -14,7 +14,7 @@ export class ApiException extends HTTPException {
     status: ContentfulStatusCode,
     message: string,
     issues?: ZodIssue[],
-    providerError?: any
+    providerError?: any,
   ) {
     super(status, { message });
     this.providerError = providerError;
@@ -31,7 +31,7 @@ export class ApiException extends HTTPException {
       provider,
       timestamp: new Date().toISOString(),
       message: this.message,
-      issues: this.issues?.map((issue) => ({
+      issues: this.issues?.map(issue => ({
         message: issue.message,
         path: issue.path,
       })),
@@ -44,7 +44,7 @@ export class ValidationException extends ApiException {
   constructor(
     issues: ZodIssue[],
     message: string = "Request data is invalid. Check the 'issues' field for details.",
-    providerError?: any
+    providerError?: any,
   ) {
     super(httpStatusCodes.UNPROCESSABLE_ENTITY, message, issues, providerError);
   }
@@ -90,7 +90,7 @@ export class MethodNotAllowedException extends ApiException {
   constructor(
     method: string,
     allowedMethod: string,
-    message: string = `${method} not allowed, use ${allowedMethod}`
+    message: string = `${method} not allowed, use ${allowedMethod}`,
   ) {
     super(httpStatusCodes.METHOD_NOT_ALLOWED, message);
   }
@@ -125,11 +125,10 @@ export class InternalServerException extends ApiException {
 }
 
 export class UnexpectedResponseError extends Error {
-  public readonly name: "UnexpectedResponseError" = "UnexpectedResponseError";
+  public readonly name = "UnexpectedResponseError" as const;
 
   constructor(message = "Upstream returned an unexpected response.") {
     super(message);
-    // Maintains proper stack trace (for V8 engines like Node)
     if (Error.captureStackTrace) {
       Error.captureStackTrace(this, this.constructor);
     }

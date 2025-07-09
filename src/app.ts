@@ -1,12 +1,12 @@
+import type { AppBindings } from "@/types/api-types";
 import { Hono } from "hono";
-import { AppBindings } from "@/types/api-types";
-import logger from "./middleware/pino-logger";
-import onError from "./middleware/on-error";
-import { notFound } from "stoker/middlewares";
-import { prettyServerLog } from "./utils/server-log";
-import env from "./lib/env";
-import serveFavicon from "@/middleware/favicon-handler";
 import { requestId } from "hono/request-id";
+import { notFound } from "stoker/middlewares";
+import serveFavicon from "@/middleware/favicon-handler";
+import env from "./lib/env";
+import onError from "./middleware/on-error";
+import logger from "./middleware/pino-logger";
+import { prettyServerLog } from "./utils/server-log";
 
 export function createHonoInstance() {
   return new Hono<AppBindings>();
@@ -33,7 +33,7 @@ export default function createApp() {
 export async function startServer(
   app: Hono<AppBindings>,
   startPort = 3000,
-  maxAttempts = 10
+  maxAttempts = 10,
 ) {
   console.clear();
   let port = startPort;
@@ -43,31 +43,32 @@ export async function startServer(
       prettyServerLog(port);
       env.PORT = port;
       return;
-    } catch (err) {
+    }
+    catch (err) {
       if (
-        typeof err === "object" &&
-        err !== null &&
-        "code" in err &&
-        (err as any).code === "EADDRINUSE"
+        typeof err === "object"
+        && err !== null
+        && "code" in err
+        && (err as any).code === "EADDRINUSE"
       ) {
         // add a line break
         console.warn(
-          `\x1b[2m⚠️  \x1b[33m\x1b[2mPort ${port} in use, trying ${
+          `\x1B[2m⚠️  \x1B[33m\x1B[2mPort ${port} in use, trying ${
             port + 1
-          }...\x1b[0m\n`
+          }...\x1B[0m\n`,
         );
         port++;
-      } else {
+      }
+      else {
         throw err;
       }
     }
   }
   console.error("❌ Could not find an open port");
   console.info(
-    `📢 \x1b[33mTried ports from ${startPort} to ${
+    `📢 \x1B[33mTried ports from ${startPort} to ${
       startPort + maxAttempts
-    }\x1b[0m`
+    }\x1B[0m`,
   );
-
   process.exit(1);
 }

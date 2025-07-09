@@ -1,15 +1,15 @@
 {
   "compilerOptions": {
-    "strict": true,
     "jsx": "react-jsx",
     "jsxImportSource": "hono/jsx",
-    "esModuleInterop": true,
-    "baseUrl": "src",
     "lib": ["es2020", "dom"],
+    "baseUrl": "src",
     "paths": {
       "@/*": ["*"],
       "@ecotrack/*": ["apis/ecotrack/*"],
       "@yalidine/*": ["apis/yalidine/*"]
-    }
+    },
+    "strict": true,
+    "esModuleInterop": true
   }
 }

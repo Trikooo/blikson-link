@@ -1,16 +1,16 @@
-import { Context, Next } from "hono";
+import type { Context, Next } from "hono";
+import type { ZodIssue } from "zod";
+import type { AppBindings } from "@/types/api-types";
+import { join } from "node:path";
 import { companies } from "@/config/companies";
 import {
-  CompanyNotFoundException,
   ActionNotFoundException,
-  MethodNotAllowedException,
+  CompanyNotFoundException,
   InternalServerException,
+  MethodNotAllowedException,
   ValidationException,
 } from "@/errors/api-errors";
-import { AppBindings } from "@/types/api-types";
 import { resolveActionModule } from "@/utils/resolve-action-module";
-import { join } from "path";
-import { ZodIssue } from "zod";
 
 /**
  * Middleware to validate the company and action parameters, load the action module,
@@ -22,7 +22,7 @@ import { ZodIssue } from "zod";
  */
 export default async function validateCompanyAction(
   c: Context<AppBindings>,
-  next: Next
+  next: Next,
 ) {
   const { company, actionChain } = c.req.param();
   const method = c.req.method;
@@ -42,7 +42,7 @@ export default async function validateCompanyAction(
     provider,
     model,
     actionSegments,
-    actionChain!
+    actionChain!,
   );
   validateMethodAndBindContext(c, actionModule, method);
 
@@ -57,7 +57,7 @@ export default async function validateCompanyAction(
  */
 function validateRequiredParams(
   company: string | undefined,
-  actionChain: string | undefined
+  actionChain: string | undefined,
 ) {
   const issues: ZodIssue[] = [];
   if (!company) {
@@ -74,7 +74,8 @@ function validateRequiredParams(
       path: ["actionChain"],
     });
   }
-  if (issues.length) throw new ValidationException(issues);
+  if (issues.length)
+    throw new ValidationException(issues);
 }
 
 /**
@@ -91,13 +92,15 @@ async function loadActionModule(
   provider: string,
   model: string,
   actionSegments: string[],
-  modelAction: string
+  modelAction: string,
 ) {
   const basePath = join(__dirname, `../apis/${provider}/models/${model}`);
   try {
     const actionPath = resolveActionModule(basePath, actionSegments);
     return await import(actionPath);
-  } catch (err) {
+  }
+  // eslint-disable-next-line unused-imports/no-unused-vars
+  catch (err) {
     throw new ActionNotFoundException(modelAction);
   }
 }
@@ -113,18 +116,18 @@ async function loadActionModule(
 function validateMethodAndBindContext(
   c: Context<AppBindings>,
   actionModule: any,
-  method: string
+  method: string,
 ) {
   const actionFn = actionModule.default;
   const metaData = actionModule.metaData;
   if (!actionFn) {
     throw new InternalServerException(
-      "Action handler (default export) missing in action module"
+      "Action handler (default export) missing in action module",
     );
   }
   if (!metaData) {
     throw new InternalServerException(
-      "Action metadata (metaData export) missing in action module"
+      "Action metadata (metaData export) missing in action module",
     );
   }
   if (metaData && method !== metaData.method) {

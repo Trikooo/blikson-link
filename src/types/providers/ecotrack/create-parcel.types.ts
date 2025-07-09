@@ -28,6 +28,6 @@ export interface EcotrackCreateParcelResponseError {
   message: string;
   errors: Record<string, string[]>;
 }
-export type EcotrackCreateParcelResponse =
-  | EcotrackCreateParcelResponseSuccess
-  | EcotrackCreateParcelResponseError;
+export type EcotrackCreateParcelResponse
+  = | EcotrackCreateParcelResponseSuccess
+    | EcotrackCreateParcelResponseError;

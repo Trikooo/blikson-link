@@ -1,8 +1,8 @@
-import { AppBindings } from "@/types/api-types";
+import type { Context, Next } from "hono";
+import type { AppBindings } from "@/types/api-types";
+import { ValidationException } from "@/errors/api-errors";
 import { ecotrackHeaderSchema } from "./ecotrack-headers.schema";
 import { yalidineHeadersSchema } from "./yalidine-headers.schema";
-import { Context, Next } from "hono";
-import { ValidationException } from "@/errors/api-errors";
 
 const providerHeadersSchema = {
   ecotrack: ecotrackHeaderSchema,
@@ -12,15 +12,16 @@ const providerHeadersSchema = {
 
 export default async function validateProviderHeaders(
   c: Context<AppBindings>,
-  next: Next
+  next: Next,
 ) {
   const provider = c.get("provider");
-  const schema =
-    providerHeadersSchema[provider as keyof typeof providerHeadersSchema];
+  const schema
+    = providerHeadersSchema[provider as keyof typeof providerHeadersSchema];
   const result = schema.safeParse(c.req.header());
   if (!result.success) {
     throw new ValidationException(result.error.issues);
-  } else {
+  }
+  else {
     return next();
   }
 }

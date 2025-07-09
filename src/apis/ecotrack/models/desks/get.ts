@@ -1,9 +1,9 @@
-import { Context } from "hono";
+import type { Context } from "hono";
+import type { AppBindings } from "@/types/api-types";
 import {
   fetchCommunes,
   prettifyDesks,
 } from "@/apis/ecotrack/services/desks.service";
-import { AppBindings } from "@/types/api-types";
 import { handleApiError } from "@/errors/error-handler";
 
 /**
@@ -20,7 +20,8 @@ export default async function GET(c: Context<AppBindings>) {
     const data = await fetchCommunes(c);
     const result = prettifyDesks(data);
     return result;
-  } catch (error) {
+  }
+  catch (error) {
     handleApiError(error);
   }
 }

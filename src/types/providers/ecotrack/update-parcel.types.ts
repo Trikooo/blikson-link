@@ -29,6 +29,6 @@ export interface EcotrackUpdateParcelResponseError {
   message: string;
 }
 
-export type EcotrackUpdateParcelResponse =
-  | EcotrackUpdateParcelResponseError
-  | EcotrackUpdateParcelResponseSuccess;
+export type EcotrackUpdateParcelResponse
+  = | EcotrackUpdateParcelResponseError
+    | EcotrackUpdateParcelResponseSuccess;

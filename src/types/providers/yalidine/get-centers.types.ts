@@ -44,6 +44,6 @@ export interface YalidineGetCentersErrorResponse {
 }
 
 // 🔁 Union Type
-export type YalidineGetCentersResponse =
-  | YalidineGetCentersSuccessResponse
-  | YalidineGetCentersErrorResponse;
+export type YalidineGetCentersResponse
+  = | YalidineGetCentersSuccessResponse
+    | YalidineGetCentersErrorResponse;

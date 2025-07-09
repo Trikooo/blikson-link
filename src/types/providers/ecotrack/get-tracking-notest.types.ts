@@ -14,6 +14,6 @@ export interface EcotrackGetTrackingNotesResponseError {
   errors: Record<string, string[]>;
 }
 
-export type EcotrackGetTrackingNotesResponse =
-  | EcotrackGetTrackingNotesResponseSuccess
-  | EcotrackGetTrackingNotesResponseError;
+export type EcotrackGetTrackingNotesResponse
+  = | EcotrackGetTrackingNotesResponseSuccess
+    | EcotrackGetTrackingNotesResponseError;

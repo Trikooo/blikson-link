@@ -9,7 +9,7 @@ export default function logger() {
   return pinoLogger({
     pino: pino(
       { level: env.LOG_LEVEL },
-      isProduction ? undefined : pretty()
+      isProduction ? undefined : pretty(),
     ),
     http: {
       // Use the requestId from the context that the requestId middleware sets

@@ -1,12 +1,11 @@
-import v1 from "@/routes/v1";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { Scalar } from "@scalar/hono-api-reference";
-import { readFileSync } from "fs";
-import { join } from "path";
-import css from "@/utils/test-css";
+// ...
 import { getBaseUrl } from "@/lib/env";
+import v1 from "@/routes/v1";
+import css from "@/utils/test-css";
 import createApp from "./app";
-//...
-import { HTTPException } from "hono/http-exception";
 
 const app = createApp();
 
@@ -41,9 +40,8 @@ app.use(
     hideClientButton: true,
     theme: "saturn",
     url: "/v1/openapi.yaml",
-  })
+  }),
 );
-
 
 // app.get("/timeout", async (c) => {
 //   try {

@@ -1,15 +1,15 @@
+import { AxiosError } from "axios";
 import { ZodError } from "zod";
 import {
-  ExternalServiceException,
-  UnexpectedResponseError,
-  ValidationException,
-  TimeoutException,
-  RateLimitException,
   AuthenticationException,
   AuthorizationException,
+  ExternalServiceException,
   InternalServerException,
+  RateLimitException,
+  TimeoutException,
+  UnexpectedResponseError,
+  ValidationException,
 } from "./api-errors";
-import { AxiosError } from "axios";
 
 export function handleApiError(error: unknown) {
   if (error instanceof ZodError) {
@@ -21,16 +21,16 @@ export function handleApiError(error: unknown) {
   if (error instanceof AxiosError) {
     const status = error.response?.status;
     const code = error.code;
-    const message =
-      error.response?.data?.message ||
-      error.message ||
-      "External service error";
+    const message
+      = error.response?.data?.message
+        || error.message
+        || "External service error";
 
     // Handle specific error codes/statuses
     if (
-      status === 408 ||
-      code === "ECONNABORTED" ||
-      message.toLowerCase().includes("timeout")
+      status === 408
+      || code === "ECONNABORTED"
+      || message.toLowerCase().includes("timeout")
     ) {
       throw new TimeoutException(undefined, error);
     }
@@ -40,19 +40,19 @@ export function handleApiError(error: unknown) {
     if (status === 401) {
       throw new AuthenticationException(
         "Failed to authenticate with provider",
-        error
+        error,
       );
     }
     if (status === 403) {
       throw new AuthorizationException(
         "Access to external resource is forbidden",
-        error
+        error,
       );
     }
     if (status === 404 || status === 405 || status === 422) {
       throw new InternalServerException(
         "Internal server error: The server failed to process your request due to an unexpected response from an upstream service. Please contact support",
-        error
+        error,
       );
     }
 

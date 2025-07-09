@@ -1,4 +1,4 @@
-import { CompanyMetaData } from "../types/config-types";
+import type { CompanyMetaData } from "../types/config-types";
 
 export const companies: Record<string, CompanyMetaData> = {
   yalidine: {

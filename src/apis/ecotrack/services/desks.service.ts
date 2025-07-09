@@ -1,19 +1,22 @@
-import client from "@/utils/request";
-import { buildUrl } from "@/utils/build-url";
-import { constructHeaders } from "@ecotrack/utils";
-import {
+import type { Context } from "hono";
+import type {
+  DesksResponse,
+} from "../models/desks/get.schemas";
+import type { AppBindings } from "@/types/api-types";
+import type {
   EcotrackGetCommunesQueryParams,
   EcotrackGetCommunesResponseSuccess,
+} from "@/types/providers/ecotrack/get-communes.types";
+import { constructHeaders } from "@ecotrack/utils";
+import { UnexpectedResponseError } from "@/errors/api-errors";
+import {
   ecotrackGetCommunesResponseSuccessSchema,
 } from "@/types/providers/ecotrack/get-communes.types";
-import { Context } from "hono";
-import { companies } from "@/config/companies";
+import { buildUrl } from "@/utils/build-url";
+import client from "@/utils/request";
 import {
-  DesksResponse,
   getDesksQuerySchema,
 } from "../models/desks/get.schemas";
-import { AppBindings } from "@/types/api-types";
-import { UnexpectedResponseError } from "@/errors/api-errors";
 
 /**
  * Fetches the list of communes from the Ecotrack API for the current company.
@@ -32,7 +35,9 @@ export async function fetchCommunes(c: Context<AppBindings>) {
   try {
     const parsedData = ecotrackGetCommunesResponseSuccessSchema.parse(data);
     return parsedData;
-  } catch (error) {
+  }
+  // eslint-disable-next-line unused-imports/no-unused-vars
+  catch (error) {
     throw new UnexpectedResponseError();
   }
 }
@@ -44,11 +49,11 @@ export async function fetchCommunes(c: Context<AppBindings>) {
  * @returns Communes grouped by wilaya ID.
  */
 export function prettifyDesks(
-  data: EcotrackGetCommunesResponseSuccess
+  data: EcotrackGetCommunesResponseSuccess,
 ): DesksResponse {
   const prettyDesks: DesksResponse["desks"] = {};
   const stopDeskCommunes = Object.values(data).filter(
-    (commune) => commune.has_stop_desk === 1
+    commune => commune.has_stop_desk === 1,
   );
 
   for (const { wilaya_id, code_postal, nom } of stopDeskCommunes) {
@@ -64,7 +69,7 @@ export function prettifyDesks(
 }
 
 export function constructParams(
-  c: Context<AppBindings>
+  c: Context<AppBindings>,
 ): EcotrackGetCommunesQueryParams {
   const parseResult = getDesksQuerySchema.parse({
     wilayaId: c.req.query("wilayaId"),

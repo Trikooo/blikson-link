@@ -1,7 +1,7 @@
-import { readFile } from "fs/promises";
-import { join } from "path";
-import { Context, Next } from "hono";
-import { AppBindings } from "@/types/api-types";
+import type { Context, Next } from "hono";
+import type { AppBindings } from "@/types/api-types";
+import { readFile } from "node:fs/promises";
+import { join } from "node:path";
 
 export default async function serveFavicon(c: Context<AppBindings>, next: Next) {
   if (c.req.path === "/favicon.ico") {

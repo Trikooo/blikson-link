@@ -40,6 +40,6 @@ export interface YalidineGetCommunesErrorResponse {
   };
 }
 
-export type YalidineGetCommunesResponse =
-  | YalidineGetCommunesSuccessResponse
-  | YalidineGetCommunesErrorResponse;
+export type YalidineGetCommunesResponse
+  = | YalidineGetCommunesSuccessResponse
+    | YalidineGetCommunesErrorResponse;

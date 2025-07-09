@@ -1,6 +1,6 @@
-import z from "zod";
 import { config } from "dotenv";
 import { expand } from "dotenv-expand";
+import z from "zod";
 
 expand(config());
 
@@ -15,22 +15,23 @@ const EnvSchema = z
     PROTOCOL: z.enum(["http", "https"]).default("http"),
     SENTRY_DSN: z.string().url().optional(),
   })
-  .refine((env) => env.NODE_ENV === "development" || !!env.SENTRY_DSN, {
+  .refine(env => env.NODE_ENV === "development" || !!env.SENTRY_DSN, {
     message: "SENTRY_DSN is required in production",
     path: ["SENTRY_DSN"],
   });
 
 export type Env = z.infer<typeof EnvSchema>;
 
-let env: Env;
-try {
-  env = EnvSchema.parse(process.env);
-} catch (e) {
-  const error = e as z.ZodError;
-  console.error("❌ Invalid environment variables");
-  console.error(error.flatten().fieldErrors);
-  process.exit(1);
-}
+const env = (() => {
+  // eslint-disable-next-line no-restricted-properties
+  const parsed = EnvSchema.safeParse(process.env);
+  if (!parsed.success) {
+    console.error("❌ Invalid environment variables");
+    console.error(parsed.error.flatten().fieldErrors);
+    process.exit(1);
+  }
+  return parsed.data;
+})();
 
 export default env;
 
@@ -42,7 +43,8 @@ export function getBaseUrl() {
 
   if (nodeEnv === "production") {
     return `${protocol}://${host}`;
-  } else {
+  }
+  else {
     return `${protocol}://${host}:${port}`;
   }
 }
