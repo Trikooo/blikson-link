@@ -1,3 +1,17 @@
+import os from "node:os";
+
+function getLocalIp(): string | null {
+  const interfaces = os.networkInterfaces();
+  for (const name of Object.keys(interfaces)) {
+    for (const iface of interfaces[name] || []) {
+      if (iface.family === "IPv4" && !iface.internal) {
+        return iface.address;
+      }
+    }
+  }
+  return null;
+}
+
 export function prettyServerLog(port: number) {
   const colors = {
     reset: "\x1B[0m",
@@ -29,10 +43,14 @@ export function prettyServerLog(port: number) {
     second: "2-digit",
   });
 
+  const localIp = getLocalIp();
+  const networkUrl = localIp ? `http://${localIp}:${port}` : "Unavailable";
+
   const serverInfo = `
 ${colors.dim}${colors.red}🔥 HONO API SERVER${colors.reset}
 ${colors.dim}${colors.yellow}──────────────────────────────────────────${colors.reset}
-${colors.bright}${colors.cyan}📍 URL:${colors.reset} ${colors.yellow}${colors.bright}http://localhost:${port}${colors.reset}
+${colors.bright}${colors.cyan}📍 Local:${colors.reset}   ${colors.yellow}${colors.bright}http://localhost:${port}${colors.reset}
+${colors.bright}${colors.cyan}📡 Network:${colors.reset} ${colors.yellow}${colors.bright}${networkUrl}${colors.reset}
 ${colors.dim}${colors.cyan}⚡️ Runtime:${colors.reset} ${colors.dim}${colors.magenta}Bun ${Bun.version}${colors.reset}
 ${colors.dim}${colors.cyan}🕐 Started:${colors.reset} ${colors.dim}${colors.white}${timeString}${colors.reset}
 `;
