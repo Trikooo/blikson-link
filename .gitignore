@@ -28,8 +28,6 @@ dist/
 build/
 .out/
 
-# VSCode
-.vscode/
 
 # Others
 coverage/

@@ -1,10 +1,14 @@
+import type { Context } from "hono";
+import type { AppBindings } from "@/types/api-types";
+
 /**
- * Joins a base URL and an endpoint path, ensuring exactly one slash between them.
+ * Builds a full URL using the baseUrl from companyMetadata and the endpoint from actionMetadata in the context.
  *
- * @param base - The base URL (e.g., "https://api.example.com/")
- * @param path - The endpoint path (e.g., "/get/data")
+ * @param c - The Hono context containing companyMetadata.baseUrl and actionMetadata.endpoint
  * @returns A clean, concatenated URL (e.g., "https://api.example.com/get/data")
  */
-export function buildUrl(base: string, path: string): string {
-  return `${base.replace(/\/$/, "")}/${path.replace(/^\//, "")}`;
+export function buildUrl(c: Context<AppBindings>): string {
+  const { endpoint } = c.get("actionMetadata");
+  const { baseUrl } = c.get("companyMetadata");
+  return `${baseUrl.replace(/\/$/, "")}/${endpoint.replace(/^\//, "")}`;
 }

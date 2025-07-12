@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export type HttpMethod = "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
 
-export interface CompanyMetaData {
+export interface CompanyMetadata {
   provider: Provider;
   active: boolean;
   baseUrl: string;
@@ -18,7 +18,7 @@ export interface ProviderActions {
     method: HttpMethod;
   };
 }
-export interface ActionMetaData {
+export interface ActionMetadata {
   endpoint: string;
   method: HttpMethod;
 }

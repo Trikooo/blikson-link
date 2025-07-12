@@ -1,15 +1,15 @@
 import { z } from "zod";
-import { wilayaCodeSchema } from "@/schemas/shared.schemas";
+import { wilayaIdSchema } from "@/schemas/shared.schemas";
 
 // Request query params
 export const ecotrackGetCommunesQueryParamsSchema = z.object({
-  wilaya_id: wilayaCodeSchema.optional(),
+  wilaya_id: wilayaIdSchema.optional(),
 });
 
 // Single commune entry
 export const ecotrackCommuneSchema = z.object({
   nom: z.string(),
-  wilaya_id: wilayaCodeSchema,
+  wilaya_id: wilayaIdSchema,
   code_postal: z.string(),
   has_stop_desk: z.union([z.literal(0), z.literal(1)]),
 });

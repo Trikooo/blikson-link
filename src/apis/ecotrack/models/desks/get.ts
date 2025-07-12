@@ -13,20 +13,18 @@ import { handleApiError } from "@/errors/error-handler";
  * @function
  * @param  c - Hono request context, extended with <AppBindings>.
  * @returns  Resolves to an array of communes that have a stop desk.
- * @throws  Throws 500 error if the request fails or an unexpected error occurs.
+ * @throws  Throws the appropriate status code if the request fails.
  */
 export default async function GET(c: Context<AppBindings>) {
   try {
-    const data = await fetchCommunes(c);
-    const result = prettifyDesks(data);
-    return result;
+    return prettifyDesks(await fetchCommunes(c));
   }
   catch (error) {
     handleApiError(error);
   }
 }
 
-export const metaData = {
-  endpoint: "api/get/get/get/communes",
+export const metadata = {
+  endpoint: "get/communes",
   method: "GET",
 };

@@ -1,7 +1,5 @@
 import type { Context } from "hono";
-import type {
-  DesksResponse,
-} from "../models/desks/get.schemas";
+import type { DesksResponse } from "@/schemas/ecotrack/desks.schema";
 import type { AppBindings } from "@/types/api-types";
 import type {
   EcotrackGetCommunesQueryParams,
@@ -9,14 +7,12 @@ import type {
 } from "@/types/providers/ecotrack/get-communes.types";
 import { constructHeaders } from "@ecotrack/utils";
 import { UnexpectedResponseError } from "@/errors/api-errors";
+import { getDesksQuerySchema } from "@/schemas/ecotrack/desks.schema";
 import {
   ecotrackGetCommunesResponseSuccessSchema,
 } from "@/types/providers/ecotrack/get-communes.types";
 import { buildUrl } from "@/utils/build-url";
 import client from "@/utils/request";
-import {
-  getDesksQuerySchema,
-} from "../models/desks/get.schemas";
 
 /**
  * Fetches the list of communes from the Ecotrack API for the current company.
@@ -25,10 +21,7 @@ import {
  * @returns The raw response containing communes.
  */
 export async function fetchCommunes(c: Context<AppBindings>) {
-  const { endpoint } = c.get("actionMetaData");
-  const { baseUrl } = c.get("companyMetaData");
-
-  const { data } = await client.get(buildUrl(baseUrl, endpoint), {
+  const { data } = await client.get(buildUrl(c), {
     headers: constructHeaders(c),
     params: constructParams(c),
   });

@@ -1,7 +1,8 @@
 import type { Context } from "hono";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
 import type { ZodIssue } from "zod";
-import type { AppBindings, ErrorResponse } from "../types/api-types";
+import type { AppBindings, ErrorResponse, SimplifiedIssue } from "../types/api-types";
+
 import { HTTPException } from "hono/http-exception";
 
 import * as httpStatusCodes from "stoker/http-status-codes";
@@ -33,8 +34,8 @@ export class ApiException extends HTTPException {
       message: this.message,
       issues: this.issues?.map(issue => ({
         message: issue.message,
-        path: issue.path,
-      })),
+        path: issue.path.length <= 1 ? issue.path[0] : issue.path,
+      })) as SimplifiedIssue[],
     };
   }
 }
@@ -127,7 +128,7 @@ export class InternalServerException extends ApiException {
 export class UnexpectedResponseError extends Error {
   public readonly name = "UnexpectedResponseError" as const;
 
-  constructor(message = "Upstream returned an unexpected response.") {
+  constructor(message = "Upstream returned an unexpected success response.") {
     super(message);
     if (Error.captureStackTrace) {
       Error.captureStackTrace(this, this.constructor);

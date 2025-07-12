@@ -47,3 +47,7 @@ export function checkRateLimits(headers: Partial<RateLimitHeaders>) {
     remainingHour,
   };
 }
+
+export function normalizeAlgerianPhone(phone: string): string {
+  return phone.trim().replace(/^(\+213)/, "0");
+}

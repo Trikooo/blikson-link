@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { wilayaCodeSchema } from "@/schemas/shared.schemas";
+import { wilayaIdSchema } from "@/schemas/shared.schemas";
 
 export const getDesksQuerySchema = z.object({
   wilayaId: z
@@ -18,7 +18,7 @@ export const deskLocationSchema = z.object({
 });
 
 export const desksResponseSchema = z.object({
-  desks: z.record(wilayaCodeSchema, z.array(deskLocationSchema)),
+  desks: z.record(wilayaIdSchema, z.array(deskLocationSchema)),
 });
 
 export type DesksResponse = z.infer<typeof desksResponseSchema>;

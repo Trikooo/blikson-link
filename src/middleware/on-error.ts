@@ -31,8 +31,8 @@ export default function onError(error: any, c: Context<AppBindings>) {
       method: c.req.method,
       status: (error as any).status || 500,
       timestamp: new Date().toISOString(),
-      actionMetaData: c.get("actionMetaData"),
-      companyMetaData: c.get("companyMetaData"),
+      actionMetadata: c.get("actionMetadata"),
+      companyMetadata: c.get("companyMetadata"),
       providerError: error.providerError?.response?.data,
     };
     c.var.logger.error(errorLog);

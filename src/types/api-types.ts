@@ -1,7 +1,6 @@
 import type { Context } from "hono";
 import type { PinoLogger } from "hono-pino";
-import type { ZodIssue } from "zod";
-import type { ActionMetaData, CompanyMetaData, Provider } from "./config-types";
+import type { ActionMetadata, CompanyMetadata, Provider } from "./config-types";
 
 // Base API response interface that all responses should extend
 export interface BaseApiResponse {
@@ -9,13 +8,17 @@ export interface BaseApiResponse {
   requestId: string;
   provider?: string; // Which provider handled the request
 }
-
-// Error response with error details
+export interface SimplifiedIssue {
+  message: string;
+  path: string | string[];
+}
+// Error response with errors
 export interface ErrorResponse extends BaseApiResponse {
   success: false;
-  message: string;
-  issues?: Partial<ZodIssue>[];
   timestamp: string;
+  message: string;
+  issues?: SimplifiedIssue[];
+
 }
 
 // Success response with generic data type
@@ -35,7 +38,7 @@ export interface AppBindings {
     logger: PinoLogger;
     actionPath: string;
     actionFn: (c: Context<any>) => Promise<any>;
-    actionMetaData: ActionMetaData;
-    companyMetaData: CompanyMetaData;
+    actionMetadata: ActionMetadata;
+    companyMetadata: CompanyMetadata;
   };
 }

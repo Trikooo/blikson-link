@@ -58,3 +58,29 @@ export const WILAYAS = [
   { id: 57, name: "El M'Ghair" },
   { id: 58, name: "El Menia" },
 ] as const;
+
+// Valid wilaya codes (landline prefixes)
+export const LANDLINE_WILAYA_CODES = [
+  "021",
+  "023",
+  "024",
+  "025",
+  "026",
+  "027",
+  "029",
+  "031",
+  "032",
+  "033",
+  "034",
+  "035",
+  "036",
+  "037",
+  "038",
+  "039",
+  "041",
+  "043",
+  "045",
+  "046",
+  "048",
+  "049",
+];

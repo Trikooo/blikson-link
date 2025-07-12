@@ -35,7 +35,7 @@ export default async function validateCompanyAction(
   }
   c.set("provider", provider);
   c.set("company", company!);
-  c.set("companyMetaData", companies[company]);
+  c.set("companyMetadata", companies[company]);
 
   const [model, ...actionSegments] = actionChain!.split(".");
   const actionModule = await loadActionModule(
@@ -119,20 +119,20 @@ function validateMethodAndBindContext(
   method: string,
 ) {
   const actionFn = actionModule.default;
-  const metaData = actionModule.metaData;
+  const metadata = actionModule.metadata;
   if (!actionFn) {
     throw new InternalServerException(
       "Action handler (default export) missing in action module",
     );
   }
-  if (!metaData) {
+  if (!metadata) {
     throw new InternalServerException(
-      "Action metadata (metaData export) missing in action module",
+      "Action metadata (metadata export) missing in action module",
     );
   }
-  if (metaData && method !== metaData.method) {
-    throw new MethodNotAllowedException(method, metaData.method);
+  if (metadata && method !== metadata.method) {
+    throw new MethodNotAllowedException(method, metadata.method);
   }
   c.set("actionFn", actionFn);
-  c.set("actionMetaData", metaData);
+  c.set("actionMetadata", metadata);
 }

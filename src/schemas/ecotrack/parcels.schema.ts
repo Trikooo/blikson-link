@@ -1,0 +1,46 @@
+import { z } from "zod";
+import { algerianPhoneSchema, wilayaIdSchema } from "../shared.schemas";
+
+function trimmedString(max: number = 255) {
+  return z.string().trim().min(1).max(max);
+}
+
+export const normalizedEcotrackParcelSchema = z.object({
+  id: trimmedString().optional(),
+  name: trimmedString(),
+  phoneNumber: algerianPhoneSchema,
+  phoneNumberAlt: algerianPhoneSchema.optional(),
+  wilayaId: wilayaIdSchema,
+  commune: trimmedString(),
+  address: trimmedString(),
+  operationType: z.union([
+    z.literal(1),
+    z.literal(2),
+    z.literal(3),
+    z.literal(4),
+  ]),
+  shippingPrice: z.number().int().positive().optional(),
+  postalCode: trimmedString(5).optional(),
+  productName: trimmedString().optional(),
+  productValue: z.number().int().positive(),
+  fromStock: z.boolean().optional(),
+  quantity: z.number().int().positive().optional(),
+  productToCollect: trimmedString().optional(),
+  shopName: trimmedString().optional(),
+  isStopDesk: z.boolean().optional(),
+  weight: z.number().positive().optional(),
+  isFragile: z.boolean().optional(),
+  notes: trimmedString().optional(),
+}).refine(
+  (data) => {
+    if (data.fromStock === true)
+      return data.quantity !== undefined;
+    return true;
+  },
+  {
+    message: "quantity is required when fromStock is true",
+    path: ["quantity"],
+  },
+);
+
+export type NormalizedEcotrackParcel = z.infer<typeof normalizedEcotrackParcelSchema>;

@@ -1,6 +1,6 @@
-import type { CompanyMetaData } from "../types/config-types";
+import type { CompanyMetadata } from "../types/config-types";
 
-export const companies: Record<string, CompanyMetaData> = {
+export const companies: Record<string, CompanyMetadata> = {
   yalidine: {
     provider: "yalidine",
     active: true,
