@@ -11,9 +11,9 @@ export const ecotrackRateEntrySchema = z.object({
 export const ecotrackGetRatesSuccessResponseSchema = z.object({
   livraison: z.array(ecotrackRateEntrySchema),
   pickup: z.array(ecotrackRateEntrySchema),
-  echange: z.array(ecotrackRateEntrySchema).optional(),
-  recouvrement: z.array(ecotrackRateEntrySchema).optional(),
-  retour: z.array(ecotrackRateEntrySchema).optional(),
+  echange: z.array(ecotrackRateEntrySchema),
+  recouvrement: z.array(ecotrackRateEntrySchema),
+  retours: z.array(ecotrackRateEntrySchema),
 });
 
 // Error response structure

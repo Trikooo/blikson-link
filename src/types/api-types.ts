@@ -24,7 +24,8 @@ export interface ErrorResponse extends BaseApiResponse {
 // Success response with generic data type
 export type SuccessResponse<T> = BaseApiResponse & {
   success: true;
-} & T;
+  payload: T;
+};
 
 // Union type of all possible API responses
 export type ApiResponse<T>

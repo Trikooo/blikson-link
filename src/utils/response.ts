@@ -9,6 +9,6 @@ export function normalizeSuccessResponse<T extends object>(
     success: true,
     requestId: c.get("requestId"),
     provider: c.get("provider"),
-    ...data,
+    payload: data,
   };
 }

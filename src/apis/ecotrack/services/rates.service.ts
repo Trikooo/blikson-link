@@ -13,12 +13,16 @@ export async function fetchRates(c: Context<AppBindings>) {
   const { data } = await client.get(buildUrl(c), {
     headers: constructHeaders(c),
   });
+  if ("echnage" in data) {
+    data.echange = data.echnage;
+    delete data.echnage;
+  }
   try {
     return ecotrackGetRatesSuccessResponseSchema.parse(data);
   }
-  // eslint-disable-next-line unused-imports/no-unused-vars
+
   catch (error) {
-    throw new UnexpectedResponseError();
+    throw new UnexpectedResponseError(error);
   }
 }
 

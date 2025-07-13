@@ -2,7 +2,7 @@ import type { Context } from "hono";
 import type { NormalizedEcotrackParcel } from "@/schemas/ecotrack/parcels.schema";
 import type { AppBindings } from "@/types/api-types";
 import type { RawEcotrackParcel } from "@/types/providers/ecotrack/create-parcel.types";
-import { isAxiosError } from "axios";
+import axios, { isAxiosError } from "axios";
 import { ZodError } from "zod";
 import { UnexpectedResponseError } from "@/errors/api-errors";
 import { ecotrackCreateParcelResponseSuccessSchema, ecotrackCreateParcelResponseValidationErrorSchema } from "@/types/providers/ecotrack/create-parcel.types";
@@ -21,7 +21,6 @@ export async function createParcels(
     const ecotrackHeaders = constructHeaders(c);
     const shippingPrice = requestData.shippingPrice || await fetchShippingPrice(baseUrl, requestData, ecotrackHeaders);
     const ecotrackPayload = toEcotrackPayload(requestData, shippingPrice);
-
     const { data } = await client.post(buildUrl(c), ecotrackPayload, {
       headers: ecotrackHeaders,
     });
@@ -30,12 +29,11 @@ export async function createParcels(
     try {
       parsedData = ecotrackCreateParcelResponseSuccessSchema.parse(data);
     }
-    catch {
-      throw new UnexpectedResponseError();
+    catch (error) {
+      throw new UnexpectedResponseError(error);
     }
-
     if (parsedData.success) {
-      return { trackingNumber: parsedData.tracking };
+      return { ...requestData, shippingPrice, trackingNumber: parsedData.tracking };
     }
 
     if (parsedData.message === "Module de stockage désactivé") {
@@ -47,8 +45,6 @@ export async function createParcels(
         },
       ]);
     }
-
-    throw new UnexpectedResponseError();
   }
   catch (error) {
     if (isAxiosError(error)) {
@@ -74,6 +70,13 @@ export async function createParcels(
 }
 
 function toEcotrackPayload(requestData: NormalizedEcotrackParcel, shippingPrice: number): RawEcotrackParcel {
+  const ecotrackOperationMap = {
+    delivery: 1,
+    exchange: 2,
+    pickup: 3,
+    recovery: 4,
+  } as const;
+
   return {
     reference: requestData.id,
     nom_client: requestData.name,
@@ -90,37 +93,60 @@ function toEcotrackPayload(requestData: NormalizedEcotrackParcel, shippingPrice:
     quantite: requestData.quantity,
     produit_a_recuperer: requestData.productToCollect,
     boutique: requestData.shopName,
-    type: requestData.operationType,
+    type: ecotrackOperationMap[requestData.operationType],
     stop_desk: requestData.isStopDesk ? 1 : 0,
     weight: requestData.weight,
     fragile: requestData.isFragile,
   };
 }
 
-export async function fetchShippingPrice(baseUrl: string, requestData: NormalizedEcotrackParcel, ecotrackHeaders: any) {
-  const { endpoint } = actionMetadata;
-  const url = `${baseUrl.replace(/\/$/, "")}/${endpoint.replace(/^\//, "")}`;
-  const { data } = await client.get(url, { headers: ecotrackHeaders });
-  const operationTypeMap = {
-    1: "livraison",
-    2: "pickup",
-    3: "echange",
-    4: "recouvrement",
-  } as const;
-  const t = operationTypeMap[requestData.operationType];
-  let shippingPrice;
+export async function fetchShippingPrice(
+  baseUrl: string,
+  requestData: NormalizedEcotrackParcel,
+  ecotrackHeaders: any,
+) {
   try {
+    const { endpoint } = actionMetadata;
+    const url = `${baseUrl.replace(/\/$/, "")}/${endpoint.replace(/^\//, "")}`;
+
+    const { data } = await client.get(url, { headers: ecotrackHeaders });
+
+    // Fix Ecotrack typo before parsing
+    if ("echnage" in data) {
+      data.echange = data.echnage;
+      delete data.echnage;
+    }
+
     const parsedData = ecotrackGetRatesSuccessResponseSchema.parse(data);
-    const wilayaPrices = parsedData[t]?.find(({ wilaya_id }) => wilaya_id === requestData.wilayaId);
+
+    const operationTypeMap = {
+      delivery: "livraison",
+      pickup: "pickup",
+      exchange: "echange",
+      recovery: "recouvrement",
+    } as const;
+
+    const t = operationTypeMap[requestData.operationType];
+
+    const wilayaPrices = parsedData[t]?.find(
+      ({ wilaya_id }) => wilaya_id === requestData.wilayaId,
+    );
+
     if (!wilayaPrices) {
       throw new Error(`No prices for wilayaId: ${requestData.wilayaId}`);
     }
-    shippingPrice = requestData.isStopDesk ? wilayaPrices?.tarif_stopdesk : wilayaPrices?.tarif;
+
+    const shippingPrice = requestData.isStopDesk
+      ? wilayaPrices.tarif_stopdesk
+      : wilayaPrices.tarif;
+
     return Number(shippingPrice);
   }
+  catch (err) {
+    if (axios.isAxiosError(err)) {
+      throw err;
+    }
 
-  // eslint-disable-next-line unused-imports/no-unused-vars
-  catch (error) {
-    throw new UnexpectedResponseError();
+    throw new UnexpectedResponseError(err, "Failed to fetch Ecotrack shipping price");
   }
 }

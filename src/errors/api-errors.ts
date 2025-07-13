@@ -6,6 +6,8 @@ import type { AppBindings, ErrorResponse, SimplifiedIssue } from "../types/api-t
 import { HTTPException } from "hono/http-exception";
 
 import * as httpStatusCodes from "stoker/http-status-codes";
+
+import { ZodError } from "zod";
 // Base API Exception class
 export class ApiException extends HTTPException {
   public readonly issues?: ZodIssue[];
@@ -128,10 +130,20 @@ export class InternalServerException extends ApiException {
 export class UnexpectedResponseError extends Error {
   public readonly name = "UnexpectedResponseError" as const;
 
-  constructor(message = "Upstream returned an unexpected success response.") {
+  constructor(error: unknown, message = "Upstream returned an unexpected success response.") {
     super(message);
+
     if (Error.captureStackTrace) {
       Error.captureStackTrace(this, this.constructor);
+    }
+
+    // Log Zod issues if relevant
+    if (error instanceof ZodError) {
+      const issues = error.errors.map(issue => ({
+        path: issue.path.join("."),
+        message: issue.message,
+      }));
+      console.warn("🧩 Zod error validating response:", issues);
     }
   }
 }

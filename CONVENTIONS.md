@@ -10,7 +10,6 @@
 - [Testing](#testing)
 - [Git Workflow](#git-workflow)
 - [Documentation](#documentation)
-- [Best Practices](#best-practices)
 
 ---
 
@@ -60,7 +59,7 @@ blikson-link/
 ## Naming Conventions
 
 - **Directories:** Lowercase (e.g., `ecotrack/`, `yalidine/`)
-- **Files:** camelCase (e.g., `createParcel.ts`, `getDesksQuerySchema.ts`)
+- **Files:** kebab-case (e.g., `error-handler.ts`, `create-parcels.ts`)
 - **Type files:** `.types.ts` suffix (e.g., `create-parcel.types.ts`)
 - **Schemas:** `.schemas.ts` suffix for Zod schemas
 - **Error/Exception Classes:**
@@ -108,7 +107,7 @@ export type CreateParcelResponse = CreateParcelResponseSuccess | CreateParcelRes
 - **Unexpected or logic errors** (extending `Error`) use the `Error` suffix.
 - **Error responses** are consistent, with a timestamp, requestId, and provider.
 - **Logging:**
-  - All errors except validation errors are logged using `c.var.logger.error`.
+  - All errors except validation errors are logged using `c.var.logger.error` and in Sentry.
   - Logs include message, name, stack, requestId, provider, path, method, status, and timestamp.
 - **Proxy logic:**
   - If the proxy receives a 404, 405, or 422 from a provider, it is treated as an internal server error, as this indicates a bug in proxy logic.
@@ -139,20 +138,3 @@ export type CreateParcelResponse = CreateParcelResponseSuccess | CreateParcelRes
 - Update conventions as the codebase evolves.
 
 ---
-
-## Best Practices
-
-- **Error Handling:** Use try-catch for async operations, log errors, and provide user-friendly messages.
-- **Performance:** Use caching, connection pooling, and monitor response times.
-- **Security:** Validate all input, use environment variables for secrets, and implement authentication and rate limiting.
-- **Testing:** Maintain good test coverage with proper libraries and tools.
-
----
-
-## Additional Resources
-
-- [Bun Documentation](https://bun.sh/docs)
-- [Hono Documentation](https://hono.dev)
-- [TypeScript Documentation](https://www.typescriptlang.org/docs)
-- [ESLint Rules](https://eslint.org/docs/rules)
-- [Prettier Configuration](https://prettier.io/docs/en/configuration.html)
