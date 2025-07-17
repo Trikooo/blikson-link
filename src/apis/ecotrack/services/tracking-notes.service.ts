@@ -2,7 +2,7 @@ import type { Context } from "hono";
 import type { NormalizedEcotrackCreateTrackingNote } from "@/schemas/ecotrack/tracking-notes.schema";
 import type { AppBindings } from "@/types/api-types";
 import { AxiosError } from "axios";
-import { ZodError } from "zod"; // for throwing a zod-like error
+import { ZodError } from "zod";
 import { UnexpectedResponseError } from "@/errors/api-errors";
 import { ecotrackCreateTrackingNoteResponseSuccessSchema } from "@/types/providers/ecotrack/create-tracking-note.types";
 import { buildUrl } from "@/utils/build-url";
@@ -11,13 +11,25 @@ import { constructHeaders } from "../utils";
 
 export async function createTrackingNote(
   c: Context<AppBindings>,
-  requestData: NormalizedEcotrackCreateTrackingNote,
+  requestData: Omit<NormalizedEcotrackCreateTrackingNote, "trackingNumber">,
 ) {
+  const trackingNumber = c.req.param("id");
+
+  if (!trackingNumber) {
+    throw new ZodError([
+      {
+        path: ["trackingNumber"],
+        message: "Missing tracking number in URL",
+        code: "custom",
+      },
+    ]);
+  }
+
   try {
     const { data } = await client.post(
       buildUrl(c),
       {
-        tracking: requestData.trackingNumber,
+        tracking: trackingNumber,
         content: requestData.trackingNote,
       },
       {
@@ -40,7 +52,7 @@ export async function createTrackingNote(
         throw new ZodError([
           {
             path: ["trackingNumber"],
-            message: "Invalid trackingNumber",
+            message: "Invalid tracking number",
             code: "custom",
           },
         ]);

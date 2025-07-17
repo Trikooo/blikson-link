@@ -9,12 +9,12 @@ import logger from "./middleware/pino-logger";
 import { prettyServerLog } from "./utils/server-log";
 
 export function createHonoInstance() {
-  return new Hono<AppBindings>();
+  return new Hono<AppBindings>({ strict: false });
 }
 
 export default function createApp() {
   const app = createHonoInstance();
-  app.use("*", requestId());
+  app.use("*", requestId({ headerName: "request-id" }));
   app.use(logger());
   app.onError(onError);
   app.notFound(notFound);

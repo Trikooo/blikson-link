@@ -1,7 +1,6 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { Scalar } from "@scalar/hono-api-reference";
-// ...
 import { getBaseUrl } from "@/lib/env";
 import v1 from "@/routes/v1";
 import css from "@/utils/test-css";

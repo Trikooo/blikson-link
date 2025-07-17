@@ -1,7 +1,7 @@
 import type { Context } from "hono";
 import type { AppBindings } from "@/types/api-types";
 import type { ActionMetadata } from "@/types/config-types";
-import { createParcels } from "@/apis/ecotrack/services/parcels.service";
+import { createParcels } from "@/apis/ecotrack/services/parcels/create-parcel.service";
 import { handleApiError } from "@/errors/error-handler";
 import { normalizedEcotrackParcelSchema } from "@/schemas/ecotrack/parcels.schema";
 

@@ -147,3 +147,18 @@ export class UnexpectedResponseError extends Error {
     }
   }
 }
+
+export class NotFoundError extends Error {
+  public readonly name = "NotFoundError" as const;
+  public readonly providerError?: any;
+
+  constructor(message = "Resource not found", providerError?: any) {
+    super(message);
+
+    if (Error.captureStackTrace) {
+      Error.captureStackTrace(this, this.constructor);
+    }
+
+    this.providerError = providerError;
+  }
+}

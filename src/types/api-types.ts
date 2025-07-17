@@ -4,7 +4,7 @@ import type { ActionMetadata, CompanyMetadata, Provider } from "./config-types";
 
 // Base API response interface that all responses should extend
 export interface BaseApiResponse {
-  success: boolean;
+  success: boolean | "partial";
   requestId: string;
   provider?: string; // Which provider handled the request
 }
@@ -23,7 +23,7 @@ export interface ErrorResponse extends BaseApiResponse {
 
 // Success response with generic data type
 export type SuccessResponse<T> = BaseApiResponse & {
-  success: true;
+  success: true | "partial";
   payload: T;
 };
 

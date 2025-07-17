@@ -1,4 +1,6 @@
 import type { Context } from "hono";
+import type { AppBindings } from "@/types/api-types";
+import { ZodError } from "zod";
 
 /**
  * Rate limit headers interface based on EcoTrack API documentation
@@ -48,6 +50,27 @@ export function checkRateLimits(headers: Partial<RateLimitHeaders>) {
   };
 }
 
-export function normalizeAlgerianPhone(phone: string): string {
+export function normalizeAlgerianPhone(phone: string) {
   return phone.trim().replace(/^(\+213)/, "0");
+}
+
+export const ecotrackOperationMap = {
+  delivery: 1,
+  exchange: 2,
+  pickup: 3,
+  recovery: 4,
+} as const;
+
+export function resolveTrackingNumber(c: Context<AppBindings>, trackingNumber?: string) {
+  const resolved = trackingNumber || c.req.param("id");
+  if (!resolved) {
+    throw new ZodError([
+      {
+        code: "custom",
+        message: "trackingNumber is required",
+        path: ["trackingNumber"],
+      },
+    ]);
+  }
+  return resolved;
 }

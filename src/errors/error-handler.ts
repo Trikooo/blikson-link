@@ -5,6 +5,8 @@ import {
   AuthorizationException,
   ExternalServiceException,
   InternalServerException,
+  NotFoundError,
+  NotFoundException,
   RateLimitException,
   TimeoutException,
   UnexpectedResponseError,
@@ -21,6 +23,10 @@ function logJsErrorDetails(error: unknown) {
 }
 
 export function handleApiError(error: unknown): never {
+  // Not found error
+  if (error instanceof NotFoundError) {
+    throw new NotFoundException(error.message);
+  }
   // 🧪 Zod validation error
   if (error instanceof ZodError) {
     throw new ValidationException(error.issues);
@@ -94,4 +100,55 @@ export function handleApiError(error: unknown): never {
   // 🧼 Unknown fallback
   logJsErrorDetails(error);
   throw new InternalServerException(undefined, error);
+}
+
+export function getErrorMessage(error: unknown): string {
+  if (error instanceof ZodError) {
+    return error.issues.map(e => e.message).join(", ");
+  }
+
+  if (error instanceof UnexpectedResponseError) {
+    return error.message;
+  }
+
+  if (error instanceof AxiosError) {
+    const status = error.response?.status;
+    const code = error.code;
+    const message
+      = error.response?.data?.message
+        || error.message
+        || "External service error";
+
+    if (
+      status === 408
+      || code === "ECONNABORTED"
+      || message.toLowerCase().includes("timeout")
+    ) {
+      return "Request timed out";
+    }
+
+    if (status === 429) {
+      return "Rate limit exceeded";
+    }
+
+    if (status === 401) {
+      return "Authentication failed";
+    }
+
+    if (status === 403) {
+      return "Access denied";
+    }
+
+    if ([404, 405, 422].includes(status ?? 0)) {
+      return "Unexpected upstream error";
+    }
+
+    return message;
+  }
+
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  return "Unknown error";
 }
