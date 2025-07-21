@@ -17,7 +17,7 @@ import { handleApiError } from "@/errors/error-handler";
  */
 export default async function GET(c: Context<AppBindings>) {
   try {
-    return prettifyDesks(await fetchCommunes(c));
+    return { payload: prettifyDesks(await fetchCommunes(c)) };
   }
   catch (error) {
     handleApiError(error);

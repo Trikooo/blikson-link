@@ -3,7 +3,7 @@ import axiosRetry from "axios-retry";
 
 // Create axios instance
 const client = axios.create({
-  timeout: 5000,
+  timeout: 60000,
   headers: {
     "Content-Type": "application/json",
   },

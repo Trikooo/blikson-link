@@ -47,11 +47,31 @@ export async function fetchShippingPrice(
 
     return Number(shippingPrice);
   }
-  catch (err) {
-    if (axios.isAxiosError(err)) {
-      throw err;
+  catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw error;
     }
 
-    throw new UnexpectedResponseError(err, "Failed to fetch Ecotrack shipping price");
+    throw new UnexpectedResponseError(error);
+  }
+}
+
+/**
+ * Updates shippingPrice in place for a single parcel or an array of parcels.
+ * Accepts NormalizedEcotrackParcel | NormalizedEcotrackParcelUpdate | NormalizedEcotrackParcel[]
+ * or NormalizedEcotrackParcelUpdate[].
+ */
+export async function updateShippingPricesInPlace(
+  baseUrl: string,
+  parcels: NormalizedEcotrackParcel | NormalizedEcotrackParcelUpdate | NormalizedEcotrackParcel[] | NormalizedEcotrackParcelUpdate[],
+  ecotrackHeaders: any,
+) {
+  if (Array.isArray(parcels)) {
+    for (const parcel of parcels) {
+      parcel.shippingPrice = typeof parcel.shippingPrice === "number" ? parcel.shippingPrice : await fetchShippingPrice(baseUrl, parcel, ecotrackHeaders);
+    }
+  }
+  else {
+    parcels.shippingPrice = typeof parcels.shippingPrice === "number" ? parcels.shippingPrice : await fetchShippingPrice(baseUrl, parcels, ecotrackHeaders);
   }
 }

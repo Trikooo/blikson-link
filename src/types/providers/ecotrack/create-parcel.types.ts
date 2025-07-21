@@ -19,7 +19,8 @@ export const rawEcotrackParcelSchema = z.object({
   type: z.union([z.literal(1), z.literal(2), z.literal(3), z.literal(4)]),
   stop_desk: z.union([z.literal(0), z.literal(1)]).optional(),
   weight: z.number().optional(),
-  fragile: z.boolean().optional(),
+  fragile: z.union([z.literal(0), z.literal(1)]),
+  gps_link: z.string().url().optional(),
 }).refine(
   data => data.stock !== 1 || typeof data.quantite === "number",
   {

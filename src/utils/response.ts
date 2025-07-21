@@ -5,14 +5,13 @@ export function normalizeSuccessResponse<T extends object>(
   c: Context<AppBindings>,
   data: any,
 ): SuccessResponse<T> {
-  const success = data.error ? "partial" : true;
-  console.error("hello", data.error);
-  console.error("success: ", typeof success);
-
   return {
-    success,
+    success: data.success ?? true,
     requestId: c.get("requestId"),
     provider: c.get("provider"),
-    payload: data,
+    ...(data.results && { results: data.results }),
+    ...(data.payload !== undefined && { payload: data.payload }),
+    ...(data.summary !== undefined && { summary: data.summary }),
+
   };
 }

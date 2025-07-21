@@ -2,17 +2,14 @@ import type { Context } from "hono";
 import type { NormalizedEcotrackParcel } from "@/schemas/ecotrack/parcels.schema";
 import type { AppBindings } from "@/types/api-types";
 import type { RawEcotrackParcel } from "@/types/providers/ecotrack/create-parcel.types";
-import { metadata as actionMetadata } from "@ecotrack/models/parcels/update";
 import { isAxiosError } from "axios";
 import { ZodError } from "zod";
 import { UnexpectedResponseError } from "@/errors/api-errors";
-import { getErrorMessage } from "@/errors/error-handler";
 import { ecotrackCreateParcelResponseSuccessSchema, ecotrackCreateParcelResponseValidationErrorSchema } from "@/types/providers/ecotrack/create-parcel.types";
 import { buildUrl } from "@/utils/build-url";
 import client from "@/utils/request";
 import { constructHeaders, ecotrackOperationMap, normalizeAlgerianPhone } from "../../utils";
-import { fetchShippingPrice } from "../shared/shared.rates.service";
-import { updateParcel } from "./update-parcel.service";
+import { updateShippingPricesInPlace } from "../shared/shared.rates.service";
 
 export async function createParcels(
   c: Context<AppBindings>,
@@ -21,8 +18,10 @@ export async function createParcels(
   try {
     const { baseUrl } = c.get("companyMetadata");
     const ecotrackHeaders = constructHeaders(c);
-    const shippingPrice = typeof requestData.shippingPrice === "number" ? requestData.shippingPrice : await fetchShippingPrice(baseUrl, requestData, ecotrackHeaders);
-    const ecotrackPayload = toEcotrackPayload(requestData, shippingPrice);
+    if (typeof requestData.shippingPrice !== "number") {
+      await updateShippingPricesInPlace(baseUrl, requestData, ecotrackHeaders);
+    }
+    const ecotrackPayload = toEcotrackPayload(requestData);
     const { data } = await client.post(buildUrl(c), ecotrackPayload, {
       headers: ecotrackHeaders,
     });
@@ -35,19 +34,9 @@ export async function createParcels(
       throw new UnexpectedResponseError(error);
     }
     if (parsedData.success) {
-      requestData = { ...requestData, shippingPrice };
-      const { gpsLink } = requestData;
-      let gpsLinkUpdateError;
-      if (gpsLink) {
-        gpsLinkUpdateError = await tryUpdateParcelWithGpsLink(c, requestData, actionMetadata.endpoint, parsedData.tracking);
-        console.error("gpsLinkUpdateError: ", gpsLinkUpdateError);
-      }
       return {
         trackingNumber: parsedData.tracking,
         ...requestData,
-        gpsLink: gpsLinkUpdateError ? undefined : requestData.gpsLink,
-        shippingPrice,
-        error: gpsLinkUpdateError,
       };
     }
 
@@ -83,36 +72,154 @@ export async function createParcels(
   }
 }
 
-function toEcotrackPayload(requestData: NormalizedEcotrackParcel, shippingPrice: number): RawEcotrackParcel {
-  return {
-    reference: requestData.id,
-    nom_client: requestData.name,
-    telephone: normalizeAlgerianPhone(requestData.phoneNumber),
-    telephone_2: requestData.phoneNumberAlt ? normalizeAlgerianPhone(requestData.phoneNumberAlt) : undefined,
-    adresse: requestData.address,
-    code_postal: requestData.postalCode,
-    commune: requestData.commune,
-    code_wilaya: requestData.wilayaId,
-    montant: requestData.productValue + shippingPrice,
-    remarque: requestData.notes,
-    produit: requestData.productName,
-    stock: requestData.fromStock ? 1 : 0,
-    quantite: requestData.quantity,
-    produit_a_recuperer: requestData.productToCollect,
-    boutique: requestData.storeName,
-    type: ecotrackOperationMap[requestData.operationType],
-    stop_desk: requestData.isStopDesk ? 1 : 0,
-    weight: requestData.weight,
-    fragile: requestData.isFragile,
+/**
+ * Bulk create Ecotrack parcels with robust error handling and response normalization.
+ */
+export async function createBulkParcels(
+  c: Context<AppBindings>,
+  parcels: NormalizedEcotrackParcel[],
+) {
+  const { baseUrl } = c.get("companyMetadata");
+  const ecotrackHeaders = constructHeaders(c);
+  await updateShippingPricesInPlace(baseUrl, parcels, ecotrackHeaders);
+
+  // Build Ecotrack payload using the new toEcotrackPayload
+  const ecotrackPayload = toEcotrackPayload(parcels);
+
+  const response = await client.post(
+    buildUrl(c),
+    { orders: ecotrackPayload },
+    { headers: ecotrackHeaders },
+  );
+  const resultsData = response.data?.results;
+  const results: any[] = [];
+  let successCount = 0;
+  let failCount = 0;
+
+  parcels.forEach((parcel, idx) => {
+    const key = parcel.id!;
+    console.error("key: ", key);
+    const result = resultsData[key];
+    if (!result) {
+      results.push({
+        code: "VALIDATION_ERROR",
+        message: "Unknown error",
+        path: [idx],
+      });
+      failCount++;
+      return;
+    }
+    // Commune error
+    if (result.errors) {
+      results.push({
+        code: "VALIDATION_ERROR",
+        message: "Invalid commune",
+        path: [idx, "commune"],
+      });
+      failCount++;
+      return;
+    }
+    // Stock not allowed
+    if (result.success === false && result.message === "Module de stockage désactivé") {
+      results.push({
+        code: "VALIDATION_ERROR",
+        message: "Store not eligible for stock",
+        path: [idx, "fromStock"],
+      });
+      failCount++;
+      return;
+    }
+    // Success
+    if (result.success === true) {
+      results.push({
+        trackingNumber: result.tracking,
+        ...parcel,
+      });
+      successCount++;
+      return;
+    }
+    // Unknown error
+    results.push({
+      code: "VALIDATION_ERROR",
+      message: "Unknown error",
+      path: [idx],
+    });
+    failCount++;
+  });
+
+  let success: true | false | "partial" = true;
+  let statusCode: number = 200;
+  if (successCount === 0) {
+    success = false;
+    statusCode = 422;
+  }
+  else if (failCount > 0) {
+    success = "partial";
+    statusCode = 200;
+  }
+
+  // Add summary
+  const summary = {
+    total: parcels.length,
+    succeeded: successCount,
+    failed: failCount,
   };
+
+  /**
+   * Note: This function does not handle or send HTTP responses directly.
+   * It returns a statusCode property for the caller to use when sending the response.
+   * Server errors (exceptions) are not handled here and should be caught by the caller.
+   */
+  return { results, success, summary, statusCode };
 }
 
-async function tryUpdateParcelWithGpsLink(c: Context<AppBindings>, requestData: NormalizedEcotrackParcel, endpoint: string, trackingNumber: string) {
-  try {
-    await updateParcel(c, requestData, endpoint, trackingNumber);
-    return null;
+function toEcotrackPayload(
+  parcels: NormalizedEcotrackParcel[] | NormalizedEcotrackParcel,
+): Record<string, RawEcotrackParcel> | RawEcotrackParcel {
+  function generateId(): string {
+    const suffix = Math.random().toString(36).slice(2, 8).toUpperCase();
+    return `BLIK-${suffix}`;
   }
-  catch (error) {
-    return getErrorMessage(error);
+
+  function mapParcel(parcel: NormalizedEcotrackParcel): RawEcotrackParcel {
+    if (!parcel.id)
+      parcel.id = generateId(); // assign in-place
+    return {
+      reference: parcel.id,
+      nom_client: parcel.name,
+      telephone: normalizeAlgerianPhone(parcel.phoneNumber),
+      telephone_2: parcel.phoneNumberAlt ? normalizeAlgerianPhone(parcel.phoneNumberAlt) : undefined,
+      adresse: parcel.address,
+      code_postal: parcel.postalCode,
+      commune: parcel.commune,
+      code_wilaya: parcel.wilayaId,
+      montant: parcel.productValue + (parcel.shippingPrice || 0),
+      remarque: parcel.notes,
+      produit: parcel.productName,
+      stock: parcel.fromStock ? 1 : 0,
+      quantite: parcel.quantity,
+      produit_a_recuperer: parcel.productToCollect,
+      boutique: parcel.storeName,
+      type: ecotrackOperationMap[parcel.operationType],
+      stop_desk: parcel.isStopDesk ? 1 : 0,
+      weight: parcel.weight,
+      fragile: parcel.isFragile ? 1 : 0,
+      gps_link: parcel.gpsLink,
+    };
+  }
+
+  if (Array.isArray(parcels)) {
+    const payload: Record<string, RawEcotrackParcel> = {};
+    parcels.forEach((parcel) => {
+      if (!parcel.id)
+        parcel.id = generateId(); // ensure parcel.id is present before keying
+      payload[parcel.id] = mapParcel(parcel);
+    });
+    return payload;
+  }
+  else {
+    if (!parcels.id)
+      parcels.id = generateId(); // ensure single parcel has an ID
+    return mapParcel(parcels);
   }
 }

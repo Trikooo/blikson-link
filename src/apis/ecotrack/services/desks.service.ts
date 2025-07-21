@@ -29,9 +29,8 @@ export async function fetchCommunes(c: Context<AppBindings>) {
     const parsedData = ecotrackGetCommunesResponseSuccessSchema.parse(data);
     return parsedData;
   }
-  // eslint-disable-next-line unused-imports/no-unused-vars
   catch (error) {
-    throw new UnexpectedResponseError();
+    throw new UnexpectedResponseError(error);
   }
 }
 
